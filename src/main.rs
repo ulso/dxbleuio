@@ -28,16 +28,6 @@ pub enum BleuIOCommand {
     AtFindscandata,
 }
 
-#[derive(PartialEq)]
-pub enum AppState {
-    OpenPort,
-    Idle,
-    BleuIOSetVerbose,
-    BleuIOTurnEchoOff,
-    BleuIOSetScanFilter,
-    BleuIOScan,
-}
-
 #[derive(Clone, PartialEq)]
 struct SensorData {
     value: u32,
@@ -87,6 +77,12 @@ fn SensorPanel(data: SensorData) -> Element {
     }
 }
 
+const AT: &[u8; 4] = b"AT\r\n";
+const ATE0: &[u8; 6] = b"ATE0\r\n";
+const ATV1: &[u8; 6] = b"ATV1\r\n";
+const AT_SCANFILTER: &[u8;  29] = b"AT+SCANFILTER=NAME=HibouAIR\r\n";
+const AT_FINDSCANDATA: &[u8;  17] = b"AT+FINDSCANDATA\r\n";
+
 #[component]
 pub fn Hero(port_name: String) -> Element {
         let co2_data = SensorData {
@@ -133,7 +129,7 @@ pub fn Hero(port_name: String) -> Element {
             let mut read_buffer = String::new();
 
             // Current coomunicating state with the BleuIO dongle.
-            let mut app_state = AppState::Idle;
+            let mut last_cmd: &[u8] = AT;
 
             logga(log_handle, "Port öppen. Väntar...\n");
 
@@ -143,10 +139,14 @@ pub fn Hero(port_name: String) -> Element {
 
             // 1. Skicka initialt kommando direkt
             // initial_tx.unbounded_send(BleuIOCommand::At).ok();
-            writer.write_all(b"ATV1\r\n").await.ok();
-            app_state = AppState::BleuIOSetVerbose;
+            // writer.write_all(b"ATE0\r\n").await.ok();
+            writer.write_all(ATE0).await.ok();
+            last_cmd = ATE0;
 
             let mut last_error: i64 = 0;
+
+            // let cmd: String = "AT".to_string();
+            // writer.write_all(cmd.as_bytes()).await.ok();
 
             loop {
                 tokio::select! {
@@ -163,18 +163,65 @@ pub fn Hero(port_name: String) -> Element {
                                         let t = get_bleuio_result_type(&v);
                                         match &t {
                                             BleuIOResponseType::AcknowledgementResponse => {
+                                                // Received line with possible error code - let's hope it is success!
+                                                // In any case, save it for later.
                                                 last_error = v["err"].as_i64().unwrap_or(-1); 
                                                 let ec = BleuIOErrorCode::try_from(last_error);
                                                 logga(log_handle, &format!("Error code: {}, msg: {}, ec: {:?}\n", last_error, &v["errMsg"], &ec));
                                             },
                                             BleuIOResponseType::EndResponse => {
-                                                
-                                            }
+                                                // Last line of response received.
+                                                if last_error == 0 {
+                                                    // logga(log_handle, "Operation slutförd utan fel.\n");
+                                                    if last_cmd == ATE0 {
+                                                        // Echo off successful
+                                                        logga(log_handle, "Echo avstängt\n");
+                                                        writer.write_all(ATV1).await.ok();
+                                                        last_cmd = ATV1;
+                                                    } else if last_cmd == ATV1 {
+                                                        logga(log_handle, "Verbose läge aktiverat\n");
+                                                        writer.write_all(AT_SCANFILTER).await.ok();
+                                                        last_cmd = AT_SCANFILTER;
+                                                    } else if last_cmd == AT_SCANFILTER {
+                                                        logga(log_handle, "Scan filter satt. Startar skanning...\n");
+                                                        writer.write_all(AT_FINDSCANDATA).await.ok();
+                                                        last_cmd = AT_FINDSCANDATA;
+                                                    }
+                                                } else {
+                                                    logga(log_handle, &format!("Operation slutförd med felkod {}\n", last_error));
+                                                }
+                                            },
+                                            BleuIOResponseType::ScanFindDataResponse => {
+                                                // Scan completed.
+                                                logga(log_handle, &format!("{}\n", &v["data"]));
+                                            },
                                             _ => {}
                                         }
                                     }
                                     Err(e) => {
+                                        // We may end up here for a couple of reasons:
+                                        // 1. The line is not JSON (e.g. "OK" or "ERROR")
+                                        // 2. The line is malformed JSON
                                         logga(log_handle, &format!("JSON error: {}\n", e));
+                                        logga(log_handle, &format!("Rådata: {}\n", clean_line));
+                                        if last_cmd == ATE0 {
+                                            if clean_line == "ECHO OFF" {
+                                                // Echo off successful
+                                                logga(log_handle, "Echo avstängt\n");
+                                                writer.write_all(ATV1).await.ok();
+                                                last_cmd = ATV1;
+                                            } else {
+                                                logga(log_handle, "Fel vid avstängning av echo\n");
+                                            }
+                                        } else if last_cmd == ATV1 {
+                                            if clean_line == "VERBOSE ON" {
+                                                logga(log_handle, "Verbose läge aktiverat\n");
+                                                writer.write_all(AT_SCANFILTER).await.ok();
+                                                last_cmd = AT_SCANFILTER;
+                                            } else {
+                                                logga(log_handle, "Fel vid aktivering av verbose läge\n");
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -183,10 +230,8 @@ pub fn Hero(port_name: String) -> Element {
                                 break;
                             }
                             Err(_) => {
-                                if app_state != AppState::Idle {
-                                    // Detta händer om 5 sekunder går utan att read_line blir klar
-                                    logga(log_handle, "Timeout: Ingen data på 5 sekunder.\n");
-                                }
+                                // Detta händer om 5 sekunder går utan att read_line blir klar
+                                logga(log_handle, "Timeout.\n");
                             }
                         }
                     }
