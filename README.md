@@ -1,6 +1,6 @@
 # Example Dioxus/Rust application monitoring sensor devices using the BleuIO dongle
 
-Your new bare-bones project includes minimal organization with a single `main.rs` file and a few assets.
+This is my first try to develop a desktop application in Rust using [Dioxus](https://dioxuslabs.com).
 
 ```
 project/
