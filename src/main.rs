@@ -3,6 +3,8 @@ use serial2_tokio::SerialPort;
 use tokio::io::{BufReader, AsyncBufReadExt, AsyncWriteExt};
 use tokio::time::{timeout, Duration};
 use tokio::sync::mpsc;
+use serde::{Deserialize, Serialize};
+use serde_json::{Result, Value};
 // use std::path::PathBuf;
 // use std::io::{self, Read, Write};
 // use std::thread::sleep;
@@ -28,9 +30,11 @@ pub enum BleuIOCommand {
 
 #[derive(PartialEq)]
 pub enum AppState {
-    OpenPort,           // open the BleuIO serial device
+    OpenPort,
     Idle,
-    BleuIOConfig,       // setup the BleuIO for central mode, etc.
+    BleuIOSetVerbose,
+    BleuIOTurnEchoOff,
+    BleuIOSetScanFilter,
     BleuIOScan,
 }
 
@@ -109,7 +113,7 @@ pub fn Hero(port_name: String) -> Element {
         let log_handle = log;
 
         async move {
-            let mut app_state: AppState = AppState::OpenPort;
+            // let mut app_state: AppState = AppState::OpenPort;
 
             // logga(log_handle, &format!("Försöker öppna {}\n", port_name_for_async));
             let port = match SerialPort::open(port_name_for_async, 115200) {
@@ -129,7 +133,7 @@ pub fn Hero(port_name: String) -> Element {
             let mut read_buffer = String::new();
 
             // Current coomunicating state with the BleuIO dongle.
-            app_state = AppState::Idle;
+            let mut app_state = AppState::Idle;
 
             logga(log_handle, "Port öppen. Väntar...\n");
 
@@ -138,7 +142,11 @@ pub fn Hero(port_name: String) -> Element {
             let initial_tx = internal_tx.clone();
 
             // 1. Skicka initialt kommando direkt
-            initial_tx.unbounded_send(BleuIOCommand::At).ok();
+            // initial_tx.unbounded_send(BleuIOCommand::At).ok();
+            writer.write_all(b"ATV1\r\n").await.ok();
+            app_state = AppState::BleuIOSetVerbose;
+
+            let mut last_error: i64 = 0;
 
             loop {
                 tokio::select! {
@@ -148,8 +156,27 @@ pub fn Hero(port_name: String) -> Element {
                             Ok(Ok(0)) => break, // Porten stängdes
                             Ok(Ok(_)) => {
                                 let clean_line = read_buffer.trim_end_matches(['\r', '\n']).to_string();
-                                logga(log_handle, &format!("{}\n", clean_line));
                                 read_buffer.clear();
+                                logga(log_handle, &format!("{}\n", clean_line));
+                                match parse_bleuio_result(&clean_line) {
+                                    Ok(v) => {
+                                        let t = get_bleuio_result_type(&v);
+                                        match &t {
+                                            BleuIOResponseType::AcknowledgementResponse => {
+                                                last_error = v["err"].as_i64().unwrap_or(-1); 
+                                                let ec = BleuIOErrorCode::try_from(last_error);
+                                                logga(log_handle, &format!("Error code: {}, msg: {}, ec: {:?}\n", last_error, &v["errMsg"], &ec));
+                                            },
+                                            BleuIOResponseType::EndResponse => {
+                                                
+                                            }
+                                            _ => {}
+                                        }
+                                    }
+                                    Err(e) => {
+                                        logga(log_handle, &format!("JSON error: {}\n", e));
+                                    }
+                                }
                             }
                             Ok(Err(e)) => {
                                 logga(log_handle, &format!("Läsfel: {}\n", e));
