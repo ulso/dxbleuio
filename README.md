@@ -9,5 +9,5 @@ The kinds of sensor that could be monitored by this application are the ones fro
 2. If valid device found, it tries to open the corresponding USB Serial port.
 3. If open succeeded, turns echo off with the 'ATE0' command.
 4. Enables verbose mode with the 'ATV1' command.
-5. Starts scanning for sensor advertisment with the 'AT+FINSCANDATA=FF5B07' command.
+5. Starts scanning for sensor advertisment with the 'AT+FINDSCANDATA=FF5B07' command.
 
