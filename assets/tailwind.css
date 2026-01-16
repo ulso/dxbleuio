@@ -7,19 +7,11 @@
     'Noto Color Emoji';
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
     monospace;
-    --color-green-500: oklch(72.3% 0.219 149.579);
-    --color-green-600: oklch(62.7% 0.194 149.214);
+    --color-green-700: oklch(52.7% 0.154 150.069);
     --color-gray-300: oklch(87.2% 0.01 258.338);
     --color-gray-500: oklch(55.1% 0.027 264.364);
     --color-white: #fff;
     --spacing: 0.25rem;
-    --text-sm: 0.875rem;
-    --text-sm--line-height: calc(1.25 / 0.875);
-    --text-lg: 1.125rem;
-    --text-lg--line-height: calc(1.75 / 1.125);
-    --text-3xl: 1.875rem;
-    --text-3xl--line-height: calc(2.25 / 1.875);
-    --font-weight-bold: 700;
     --radius-md: 0.375rem;
     --radius-lg: 0.5rem;
     --default-font-family: var(--font-sans);
@@ -202,9 +194,6 @@
   .mr-2 {
     margin-right: calc(var(--spacing) * 2);
   }
-  .ml-1 {
-    margin-left: calc(var(--spacing) * 1);
-  }
   .flex {
     display: flex;
   }
@@ -257,11 +246,8 @@
   .bg-gray-500 {
     background-color: var(--color-gray-500);
   }
-  .bg-green-500 {
-    background-color: var(--color-green-500);
-  }
-  .bg-green-600 {
-    background-color: var(--color-green-600);
+  .bg-green-700 {
+    background-color: var(--color-green-700);
   }
   .p-1 {
     padding: calc(var(--spacing) * 1);
@@ -269,27 +255,8 @@
   .p-4 {
     padding: calc(var(--spacing) * 4);
   }
-  .text-3xl {
-    font-size: var(--text-3xl);
-    line-height: var(--tw-leading, var(--text-3xl--line-height));
-  }
-  .text-lg {
-    font-size: var(--text-lg);
-    line-height: var(--tw-leading, var(--text-lg--line-height));
-  }
-  .text-sm {
-    font-size: var(--text-sm);
-    line-height: var(--tw-leading, var(--text-sm--line-height));
-  }
-  .font-bold {
-    --tw-font-weight: var(--font-weight-bold);
-    font-weight: var(--font-weight-bold);
-  }
   .text-white {
     color: var(--color-white);
-  }
-  .opacity-80 {
-    opacity: 80%;
   }
   .shadow-md {
     --tw-shadow: 0 4px 6px -1px var(--tw-shadow-color, rgb(0 0 0 / 0.1)), 0 2px 4px -2px var(--tw-shadow-color, rgb(0 0 0 / 0.1));
@@ -330,10 +297,6 @@
   syntax: "*";
   inherits: false;
   initial-value: solid;
-}
-@property --tw-font-weight {
-  syntax: "*";
-  inherits: false;
 }
 @property --tw-shadow {
   syntax: "*";
@@ -409,7 +372,6 @@
       --tw-skew-x: initial;
       --tw-skew-y: initial;
       --tw-border-style: solid;
-      --tw-font-weight: initial;
       --tw-shadow: 0 0 #0000;
       --tw-shadow-color: initial;
       --tw-shadow-alpha: 100%;
