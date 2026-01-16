@@ -11,3 +11,5 @@ The kinds of sensor that could be monitored by this application are the ones fro
 4. Enables verbose mode with the 'ATV1' command.
 5. Starts scanning for sensor advertisment with the 'AT+FINDSCANDATA=FF5B07' command.
 
+## Screenshot
+![Screenshot](/img/SCR-20260116-odjg.png)
