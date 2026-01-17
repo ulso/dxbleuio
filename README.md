@@ -13,3 +13,5 @@ The kinds of sensor that could be monitored by this application are the ones fro
 
 ## Screenshot
 ![Screenshot](/img/SCR-20260116-odjg.png)
+
+The application has only been tested on macos so far but should at least work on Linux as well.
