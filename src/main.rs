@@ -172,6 +172,16 @@ impl HibouAir {
         }
     }
 
+    fn get_voc_view(&self) -> String {
+        match self.voc_type {
+            0 => "".to_string(),
+            1 => "".to_string(),
+            2 => format!("{:.1} {}",self.get_voc(), self.get_voc_unit()),
+            3 => format!("{:.1} {}",self.get_voc(), self.get_voc_unit()),
+            _ => "".to_string(),
+        }
+    }
+
     fn get_pm1_0(&self) -> f64 {
         self.pm1_0.swap_bytes() as f64 / 10.0
     }
@@ -266,8 +276,8 @@ fn SensorPanel(sensor: HibouAir) -> Element {
                 div { "{sensor.get_co2()} ppm" }
                 div { "" }
                 div { "" }
-                div { "{sensor.get_voc():.1} {sensor.get_voc_unit()}" }
-                div { "{sensor.get_hum()} %rh" }
+                div { "{sensor.get_voc_view()}" }
+                div { "{sensor.get_hum():.0} %rh" }
                 div { "{sensor.get_temp()} °C" }
                 div { "{sensor.get_bar():.0} hPA" }
                 div { "{sensor.get_als()} Lux" }
@@ -297,8 +307,8 @@ fn SensorPanel(sensor: HibouAir) -> Element {
                 div { "{sensor.get_pm10()} μg/m³" }
                 div { "{sensor.get_pm2_5()} μg/m³" }
                 div { "{sensor.get_pm1_0()} μg/m³" }
-                div { "{sensor.get_voc():.1} {sensor.get_voc_unit()}" }
-                div { "{sensor.get_hum()} %rh" }
+                div { "{sensor.get_voc_view()}" }
+                div { "{sensor.get_hum():.0} %rh" }
                 div { "{sensor.get_temp()} °C" }
                 div { "{sensor.get_bar():.0} hPa" }
                 div { "{sensor.get_als()} lux" }
@@ -403,14 +413,14 @@ pub fn Hero(port_name: String) -> Element {
                                                     let hibou = HibouAir::new(data);
                                                     let id = hibou.get_id();
                                                     let voc_type = hibou.get_voc_type();
-                                                    if voc_type == 2 || voc_type == 3 {
+                                                    // if voc_type == 2 || voc_type == 3 {
                                                         sensors.insert(id, hibou);
                                                         add_sensor(hibs, hibou);
                                                         // let hibou2 = sensors.get(&hibou.get_id()).unwrap();
                                                         // logga(log_handle, &format!("HibouAIR data: {}\n", hibou2.get_board_id_string()));
                                                         let n = sensors.clone().len();
                                                         logga(log_handle, &format!("HibouAIR-enheter funna: {}\n", n));
-                                                    }
+                                                    // }
                                                 }
                                             },
                                             _ => {}
