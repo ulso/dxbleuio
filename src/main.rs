@@ -241,41 +241,63 @@ fn SensorPanel(sensor: HibouAir) -> Element {
             style: "display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px 20px;",
 
             if sensor.get_board_type() == 0x04 {
-                // Headers
-                div { style: "font-weight: bold;", "Sensor\u{00A0}ID" }
+                // Headers #1
+                div { style: "font-weight: bold;", "CO2 Sensor" }
+                div { "ID: {sensor.get_board_id_string()}" }
+                div { "" }
+                div { "" }
+                div { "" }
+                div { "" }
+                div { "" }
+                div { "" }
+                hr { class: "col-span-8 border-white/20 my-2" }
+
+                // Headers #2
                 div { style: "font-weight: bold;", "CO2" }
-                div { style: "font-weight: bold;", "VOC" }
                 div { style: "font-weight: bold;", "" }
+                div { style: "font-weight: bold;", "" }
+                div { style: "font-weight: bold;", "VOC" }
                 div { style: "font-weight: bold;", "Humidity" }
                 div { style: "font-weight: bold;", "Temp" }
                 div { style: "font-weight: bold;", "Pressure" }
                 div { style: "font-weight: bold;", "Light" }
 
                 // Data Row
-                div { "{sensor.get_board_id_string()}" }
                 div { "{sensor.get_co2()} ppm" }
-                div { "{sensor.get_voc():.1} {sensor.get_voc_unit()}" }
                 div { "" }
+                div { "" }
+                div { "{sensor.get_voc():.1} {sensor.get_voc_unit()}" }
                 div { "{sensor.get_hum()} %rh" }
                 div { "{sensor.get_temp()} °C" }
                 div { "{sensor.get_bar():.0} hPA" }
                 div { "{sensor.get_als()} Lux" }
             } else if sensor.get_board_type() == 0x03 {
-                // Headers
-                div { style: "font-weight: bold;", "Sensor\u{00A0}ID" }
+                // Headers #1
+                div { style: "font-weight: bold;", "PM Sensor" }
+                div { "ID: {sensor.get_board_id_string()}" }
+                div { "" }
+                div { "" }
+                div { "" }
+                div { "" }
+                div { "" }
+                div { "" }
+                hr { class: "col-span-8 border-white/20 my-2" }
+
+                // Headers #2
                 div { style: "font-weight: bold;", "PM10" }
                 div { style: "font-weight: bold;", "PM2.5" }
                 div { style: "font-weight: bold;", "PM1.0" }
+                div { style: "font-weight: bold;", "VOC" }
                 div { style: "font-weight: bold;", "Humidity" }
                 div { style: "font-weight: bold;", "Temp" }
                 div { style: "font-weight: bold;", "Pressure" }
                 div { style: "font-weight: bold;", "Light" }
 
                 // Data Row
-                div { "{sensor.get_board_id_string()}" }
                 div { "{sensor.get_pm10()} μg/m³" }
                 div { "{sensor.get_pm2_5()} μg/m³" }
                 div { "{sensor.get_pm1_0()} μg/m³" }
+                div { "{sensor.get_voc():.1} {sensor.get_voc_unit()}" }
                 div { "{sensor.get_hum()} %rh" }
                 div { "{sensor.get_temp()} °C" }
                 div { "{sensor.get_bar():.0} hPa" }
