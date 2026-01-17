@@ -79,43 +79,22 @@ fn is_bleuio(info: &UsbPortInfo) -> bool {
 
 // Scan list of available USB devices and return device path of first detected BleuIO device.
 pub fn find_bleuio() -> String {
-    let mut pl: Vec<SerialPortInfo> = Vec::new();
-    let mut blueio_port: String = "".to_string();
-
-    // Get vector of serialport infos. Have to use another serialport crate
-    // to get the SerialPortInfo stuff. Not available from serial2_tokio unfortunately.
-    match serialport5::available_ports() {
-        Ok(ports) => {
-            if ports.is_empty() {
-                pl = ports;
-            } else {
-                pl = ports;
-            }
-        },
-        Err(_) => {
-        },
-    };
-
-    if pl.len() > 0 {
-        for x in pl.into_iter() {
-            match x.port_type {
-                SerialPortType::UsbPort(info) => {
-                    if is_bleuio(&info) {
-                        if cfg!(target_os = "macos") {
-                            blueio_port = x.port_name.replace("/dev/tty.", "/dev/cu.");
-                        } else {
-                            blueio_port = x.port_name;
-                        }
-                        // println!("{}", blueio_port);
-                    }
-                }
-                _ => {
+        serialport5::available_ports()
+        .unwrap_or_default()
+        .into_iter()
+        .find_map(|p| {
+            if let SerialPortType::UsbPort(info) = p.port_type {
+                if is_bleuio(&info) {
+                    #[cfg(target_os = "macos")]
+                    return Some(p.port_name.replace("/dev/tty.", "/dev/cu."));
+                    
+                    #[cfg(not(target_os = "macos"))]
+                    return Some(p.port_name);
                 }
             }
-        }
-    }
-
-    blueio_port
+            None
+        })
+        .unwrap_or_default()
 }
 
 /* Test result strings:
