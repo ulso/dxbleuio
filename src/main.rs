@@ -518,7 +518,7 @@ pub fn Hero(port_name: String) -> Element {
             // style: "font-family: monospace; padding: 20px;",
             // h1 { "HibouAIR Monitor" }
             if show_log() {
-                div { style: "background: rgb(31, 28, 28); height: 300px; overflow-y: scroll; margin-bottom: 10px;",
+                div { style: "background: rgb(128, 128, 128); height: 300px; overflow-y: scroll; margin-bottom: 10px;",
                     pre { "{log}" }
                 }
             }
