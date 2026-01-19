@@ -57,6 +57,7 @@ struct HibouAir {
 // 0201061BFF5B07050422005A0000BA27C60017013E0000000000000001C002
 
 impl HibouAir {
+    // Create a new HibouAir struct from a scan data string.
     fn new(data: &str)  -> Self {
         // Parse the scan data string and populate the struct fields.
         // Return None if parsing fails.
@@ -89,6 +90,7 @@ impl HibouAir {
         }
     }
 
+    // Return a string representation of the HibouAir struct.
     fn to_string(&self) -> String {
         format!(
             "HibouAir(mfid: {}, beacon_nr: {}, board_type: {}, board_id: {:02X?}, als: {}, bar: {}, temp: {}, hum: {}, voc: {}, pm1_0: {}, pm2_5: {}, pm10: {}, co2: {}, voc_type: {})",
@@ -109,18 +111,24 @@ impl HibouAir {
         )
     }
 
+    // Getter methods for each field.
+
+    // Return board ID as u32.
     fn get_id(&self) -> u32 {
         ((self.board_id[0] as u32) << 16) | ((self.board_id[1] as u32) << 8) | (self.board_id[2] as u32)
     }
 
+    // Return board ID as hex string.
     fn get_board_id_string(&self) -> String {
         format!("{:02X}", self.get_id())
     }
 
+    // Return board type as u8.
     fn get_board_type(&self) -> u8 {
         self.board_type
     }
 
+    // Return board type as string.
     fn get_board_type_string(&self) -> String {
         match self.board_type {
             0x03 => "PM".to_string(),
@@ -129,26 +137,32 @@ impl HibouAir {
         }
     }
 
+    // Return ambient light sensor value.
     fn get_als(&self) -> u16 {
         self.als.swap_bytes()
     }
 
+    // Return barometric pressure value.
     fn get_bar(&self) -> f64 {
         self.bar.swap_bytes() as f64 / 10.0
     }
 
+    // Return temperature value.
     fn get_temp(&self) -> f64 {
         (self.temp.swap_bytes() as i16) as f64 / 10.0
     }
 
+    // Return humidity value.
     fn get_hum(&self) -> f64 {
         self.hum.swap_bytes() as f64 / 10.0
     }
 
+    // Return CO2 value.
     fn get_co2(&self) -> u16 {
         self.co2
     }
 
+    // Return VOC value.
     fn get_voc(&self) -> f64 {
         let mut v: f64 = self.voc.swap_bytes() as f64 ;
         if self.voc_type == 2 {
@@ -157,10 +171,12 @@ impl HibouAir {
         v
     }
 
+    // Return VOC type.
     fn get_voc_type(&self) -> u8 {
         self.voc_type
     }
 
+    // Return VOC unit as string.
     fn get_voc_unit(&self) -> String {
         // println!("Voc type: {}", self.voc_type);
         match self.voc_type {
@@ -172,6 +188,7 @@ impl HibouAir {
         }
     }
 
+    // Return VOC value with unit as string.
     fn get_voc_view(&self) -> String {
         match self.voc_type {
             0 => "".to_string(),
@@ -182,14 +199,17 @@ impl HibouAir {
         }
     }
 
+    // Return PM1.0 value.
     fn get_pm1_0(&self) -> f64 {
         self.pm1_0.swap_bytes() as f64 / 10.0
     }
 
+    // Return PM2.5 value.
     fn get_pm2_5(&self) -> f64 {
         self.pm2_5.swap_bytes() as f64 / 10.0
     }
 
+    // Return PM10 value.
     fn get_pm10(&self) -> f64 {
         self.pm10.swap_bytes() as f64 / 10.0
     }
