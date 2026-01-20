@@ -14,4 +14,6 @@ The kinds of sensor that could be monitored by this application are the ones fro
 ## Screenshot
 ![Screenshot](/img/SCR-20260119-mwod.png)
 
-The application has only been tested on macos so far but should at least work on Linux as well.
+![Screenshot](/img/SCR-20260120-lqgp.png)
+
+The application has been tested on macos and on my Raspberry Pi 5 with the latest Trixie distro.
