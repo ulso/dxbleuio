@@ -9,10 +9,9 @@ use tokio::time::{timeout, Duration};
 use tokio::sync::mpsc;
 use serde::{Deserialize, Serialize};
 use serde_json::{Result, Value};
-// use std::path::PathBuf;
-// use std::io::{self, Read, Write};
-// use std::thread::sleep;
-// use std::time::Duration;
+use hex;
+use zerocopy::{FromBytes, Unaligned, Immutable, KnownLayout};
+// use zerocopy::byteorder::little_endian::U16;
 use futures_util::StreamExt;
 use bleuio::*;
 
@@ -37,7 +36,9 @@ enum VocType {
     Iaq = 3,
 }
 
-#[derive(Debug, Clone, PartialEq, Copy)]
+// #[derive(Debug, Clone, PartialEq, Copy)]
+#[repr(C, packed)]
+#[derive(FromBytes, Unaligned, Immutable, KnownLayout, Debug, Clone, Copy, PartialEq)]
 struct HibouAir {
     mfid: u16,          // the manufacturer id of the device
     beacon_nr: u8,      // type of beacon
@@ -57,56 +58,38 @@ struct HibouAir {
 // 0201061BFF5B07050422005A0000BA27C60017013E0000000000000001C002
 
 impl HibouAir {
-    // Create a new HibouAir struct from a scan data string.
-    fn new(data: &str)  -> Self {
-        // Parse the scan data string and populate the struct fields.
-        // Return None if parsing fails.
-        // println!("Data len: {}", data.len());
-        // println!("Data: {}", data);
-        Self {
-            mfid: data.get(10..14).and_then(|s| u16::from_str_radix(s, 16).ok()).unwrap_or(0),
-            beacon_nr: data.get(14..16).and_then(|s| u8::from_str_radix(s, 16).ok()).unwrap_or(0),
-            board_type: data.get(16..18).and_then(|s| u8::from_str_radix(s, 16).ok()).unwrap_or(0),
-            board_id: data.get(18..24).and_then(|s| {
-                if s.len() == 6 {
-                    let b1 = u8::from_str_radix(&s[0..2], 16).ok()?;
-                    let b2 = u8::from_str_radix(&s[2..4], 16).ok()?;
-                    let b3 = u8::from_str_radix(&s[4..6], 16).ok()?;
-                    Some([b1, b2, b3])
-                } else {
-                    None
-                }
-            }).unwrap_or([0,0,0]),
-            als: data.get(24..28).and_then(|s| u16::from_str_radix(s, 16).ok()).unwrap_or(0),
-            bar: data.get(28..32).and_then(|s| u16::from_str_radix(s, 16).ok()).unwrap_or(0),
-            temp: data.get(32..36).and_then(|s| u16::from_str_radix(s, 16).ok()).unwrap_or(0),
-            hum: data.get(36..40).and_then(|s| u16::from_str_radix(s, 16).ok()).unwrap_or(0),
-            voc: data.get(40..44).and_then(|s| u16::from_str_radix(s, 16).ok()).unwrap_or(0),
-            pm1_0: data.get(44..48).and_then(|s| u16::from_str_radix(s, 16).ok()).unwrap_or(0),
-            pm2_5: data.get(48..52).and_then(|s| u16::from_str_radix(s, 16).ok()).unwrap_or(0),
-            pm10: data.get(52..56).and_then(|s| u16::from_str_radix(s, 16).ok()).unwrap_or(0),
-            co2: data.get(56..60).and_then(|s| u16::from_str_radix(s, 16).ok()).unwrap_or(0),
-            voc_type: data.get(60..62).and_then(|s| u8::from_str_radix(s, 16).ok()).unwrap_or(0),
-        }
+    /// Tar en hex-sträng och försöker konvertera den till en HibouAir-struct
+    pub fn from_hex(hex_str: &str) -> std::result::Result<Self, String> {
+        // 1. Konvertera hex till bytes
+        let bytes = hex::decode(hex_str)
+            .map_err(|e| format!("Ogiltig hex-sträng: {}", e))?;
+
+        // 2. Försök läsa structen från början av byten
+        // read_from_prefix returnerar Result<(Self, &[u8]), CastError>
+        let (data, _rest) = Self::read_from_prefix(&bytes[5..])
+            .map_err(|_| "Datan är för kort för att matcha HibouAir-formatet")?;
+
+        // 3. Returnera den kopierade structen
+        Ok(data)
     }
 
     // Return a string representation of the HibouAir struct.
     fn to_string(&self) -> String {
         format!(
             "HibouAir(mfid: {}, beacon_nr: {}, board_type: {}, board_id: {:02X?}, als: {}, bar: {}, temp: {}, hum: {}, voc: {}, pm1_0: {}, pm2_5: {}, pm10: {}, co2: {}, voc_type: {})",
-            self.mfid,
+            {self.mfid},
             self.beacon_nr,
             self.board_type,
             self.board_id,
-            self.als,
-            self.bar,
-            self.temp,
-            self.hum,
-            self.voc,
-            self.pm1_0,
-            self.pm2_5,
-            self.pm10,
-            self.co2,
+            {self.als},
+            {self.bar},
+            {self.temp},
+            {self.hum},
+            {self.voc},
+            {self.pm1_0},
+            {self.pm2_5},
+            {self.pm10},
+            {self.co2},
             self.voc_type
         )
     }
@@ -139,32 +122,32 @@ impl HibouAir {
 
     // Return ambient light sensor value.
     fn get_als(&self) -> u16 {
-        self.als.swap_bytes()
+        self.als
     }
 
     // Return barometric pressure value.
     fn get_bar(&self) -> f64 {
-        self.bar.swap_bytes() as f64 / 10.0
+        self.bar as f64 / 10.0
     }
 
     // Return temperature value.
     fn get_temp(&self) -> f64 {
-        (self.temp.swap_bytes() as i16) as f64 / 10.0
+        (self.temp as i16) as f64 / 10.0
     }
 
     // Return humidity value.
     fn get_hum(&self) -> f64 {
-        self.hum.swap_bytes() as f64 / 10.0
+        self.hum as f64 / 10.0
     }
 
     // Return CO2 value.
     fn get_co2(&self) -> u16 {
-        self.co2
+        self.co2.swap_bytes()
     }
 
     // Return VOC value.
     fn get_voc(&self) -> f64 {
-        let mut v: f64 = self.voc.swap_bytes() as f64 ;
+        let mut v: f64 = self.voc as f64 ;
         if self.voc_type == 2 {
             v = v / 100.0;
         }
@@ -201,17 +184,17 @@ impl HibouAir {
 
     // Return PM1.0 value.
     fn get_pm1_0(&self) -> f64 {
-        self.pm1_0.swap_bytes() as f64 / 10.0
+        self.pm1_0 as f64 / 10.0
     }
 
     // Return PM2.5 value.
     fn get_pm2_5(&self) -> f64 {
-        self.pm2_5.swap_bytes() as f64 / 10.0
+        self.pm2_5 as f64 / 10.0
     }
 
     // Return PM10 value.
     fn get_pm10(&self) -> f64 {
-        self.pm10.swap_bytes() as f64 / 10.0
+        self.pm10 as f64 / 10.0
     }
 }
 
@@ -430,17 +413,23 @@ pub fn Hero(port_name: String) -> Element {
                                                 // logga(log_handle, &format!("address: {} data: {}\n", &v["addr"], &v["data"]));
                                                 let data = &v["data"].as_str().unwrap_or("");
                                                 if data.len() > 60 {
-                                                    let hibou = HibouAir::new(data);
-                                                    let id = hibou.get_id();
-                                                    let voc_type = hibou.get_voc_type();
-                                                    // if voc_type == 2 || voc_type == 3 {
-                                                        sensors.insert(id, hibou);
-                                                        add_sensor(hibs, hibou);
-                                                        // let hibou2 = sensors.get(&hibou.get_id()).unwrap();
-                                                        // logga(log_handle, &format!("HibouAIR data: {}\n", hibou2.get_board_id_string()));
-                                                        let n = sensors.clone().len();
-                                                        logga(log_handle, &format!("HibouAIR-enheter funna: {}\n", n));
-                                                    // }
+                                                    match HibouAir::from_hex(data) {
+                                                        Ok(hibou) => {
+                                                            let id = hibou.get_id();
+                                                            let voc_type = hibou.get_voc_type();
+                                                            // if voc_type == 2 || voc_type == 3 {
+                                                                sensors.insert(id, hibou);
+                                                                add_sensor(hibs, hibou);
+                                                                // let hibou2 = sensors.get(&hibou.get_id()).unwrap();
+                                                                // logga(log_handle, &format!("HibouAIR data: {}\n", hibou2.get_board_id_string()));
+                                                                let n = sensors.clone().len();
+                                                                logga(log_handle, &format!("HibouAIR-enheter funna: {}\n", n));
+                                                            // }
+                                                        },
+                                                        Err(e) => {
+                                                            logga(log_handle, &format!("Fel vid tolkning av HibouAIR-data: {}\n", e));
+                                                        }
+                                                    }
                                                 }
                                             },
                                             _ => {}
