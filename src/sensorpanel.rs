@@ -1,5 +1,5 @@
 #![allow(non_snake_case)]
-use dioxus::{html::feComponentTransfer, prelude::*};
+use dioxus::prelude::*;
 use crate::hibouair::*;
 
 
@@ -8,38 +8,26 @@ fn SensorPanelCO2(sensor: HibouAir) -> Element {
     rsx! {
         div {
             class: "p-4 bg-green-700 rounded-lg shadow-md text-white flex justify-between items-center",
-            style: "display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px 20px;",
+            style: "display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px 20px;",
 
             // Headers #1
-            div { style: "font-weight: bold;", "CO2 Sensor" }
-            div { "ID: {sensor.get_board_id_string()}" }
-            div { "" }
-            div { "" }
-            div { "" }
-            div { "" }
-            div { "" }
-            div { "" }
-            hr { class: "col-span-8 border-white/20 my-2" }
+            div { class: "col-span-1", "ID: {sensor.get_board_id_string()}" }
+            div { class: "col-span-4 text-left", "CO2: {sensor.get_co2()} ppm" }
+            // hr { class: "col-span-5 border-white/20 my-2" }
 
             // Headers #2
-            div { style: "font-weight: bold;", "CO2" }
-            div { style: "font-weight: bold;", "" }
-            div { style: "font-weight: bold;", "" }
-            div { style: "font-weight: bold;", "VOC" }
-            div { style: "font-weight: bold;", "Humidity" }
-            div { style: "font-weight: bold;", "Temp" }
-            div { style: "font-weight: bold;", "Pressure" }
-            div { style: "font-weight: bold;", "Light" }
+            // div { style: "font-weight: bold;", "VOC" }
+            // div { style: "font-weight: bold;", "Humidity" }
+            // div { style: "font-weight: bold;", "Temp" }
+            // div { style: "font-weight: bold;", "Pressure" }
+            // div { style: "font-weight: bold;", "Light" }
 
             // Data Row
-            div { "{sensor.get_co2()} ppm" }
-            div { "" }
-            div { "" }
-            div { "{sensor.get_voc_view()}" }
-            div { "{sensor.get_hum():.0} %rh" }
-            div { "{sensor.get_temp()} °C" }
-            div { "{sensor.get_bar():.0} hPA" }
-            div { "{sensor.get_als()} Lux" }
+            div { "VOC: {sensor.get_voc_view()}" }
+            div { "Humid: {sensor.get_hum():.0} %rh" }
+            div { "Temp: {sensor.get_temp()} °C" }
+            div { "Press: {sensor.get_bar():.0} hPA" }
+            div { "Light: {sensor.get_als()} Lux" }
         }
     }
 }
@@ -49,38 +37,29 @@ fn SensorPanelPM(sensor: HibouAir) -> Element {
     rsx! {
         div {
             class: "p-4 bg-green-700 rounded-lg shadow-md text-white flex justify-between items-center",
-            style: "display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px 20px;",
+            style: "display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px 20px;",
 
             // Headers #1
-            div { style: "font-weight: bold;", "PM Sensor" }
             div { "ID: {sensor.get_board_id_string()}" }
+            div { "PM10: {sensor.get_pm10()} μg/m³" }
+            div { "PM2.5: {sensor.get_pm2_5()} μg/m³" }
+            div { "PM1.0: {sensor.get_pm1_0()} μg/m³" }
             div { "" }
-            div { "" }
-            div { "" }
-            div { "" }
-            div { "" }
-            div { "" }
-            hr { class: "col-span-8 border-white/20 my-2" }
+            // hr { class: "col-span-5 border-white/20 my-2" }
 
             // Headers #2
-            div { style: "font-weight: bold;", "PM10" }
-            div { style: "font-weight: bold;", "PM2.5" }
-            div { style: "font-weight: bold;", "PM1.0" }
-            div { style: "font-weight: bold;", "VOC" }
-            div { style: "font-weight: bold;", "Humidity" }
-            div { style: "font-weight: bold;", "Temp" }
-            div { style: "font-weight: bold;", "Pressure" }
-            div { style: "font-weight: bold;", "Light" }
+            // div { style: "font-weight: bold;", "VOC" }
+            // div { style: "font-weight: bold;", "Humidity" }
+            // div { style: "font-weight: bold;", "Temp" }
+            // div { style: "font-weight: bold;", "Pressure" }
+            // div { style: "font-weight: bold;", "Light" }
 
             // Data Row
-            div { "{sensor.get_pm10()} μg/m³" }
-            div { "{sensor.get_pm2_5()} μg/m³" }
-            div { "{sensor.get_pm1_0()} μg/m³" }
-            div { "{sensor.get_voc_view()}" }
-            div { "{sensor.get_hum():.0} %rh" }
-            div { "{sensor.get_temp()} °C" }
-            div { "{sensor.get_bar():.0} hPa" }
-            div { "{sensor.get_als()} lux" }
+            div { "VOC: {sensor.get_voc_view()}" }
+            div { "Humid: {sensor.get_hum():.0} %rh" }
+            div { "Temp: {sensor.get_temp()} °C" }
+            div { "Press: {sensor.get_bar():.0} hPA" }
+            div { "Light: {sensor.get_als()} Lux" }
         }
     }
 }   
