@@ -13,12 +13,13 @@ use hex;
 use zerocopy::{FromBytes, Unaligned, Immutable, KnownLayout};
 // use zerocopy::byteorder::little_endian::U16;
 use futures_util::StreamExt;
+
 use bleuio::*;
+use hibouair::*;
+use sensorpanel::*;
 
 pub mod bleuio;
-
-use hibouair::*;
-
+pub mod sensorpanel;
 pub mod hibouair;
 
 const FAVICON: Asset = asset!("/assets/favicon.ico");
@@ -80,104 +81,6 @@ fn add_sensor(mut sens: Signal<HashMap<u32, HibouAir>>, sensor: HibouAir) {
         // println!("Sensor added: {}", sensor.to_string());
     });
 }
-
-
-#[component]
-fn SensorPanelCO2(sensor: HibouAir) -> Element {
-    rsx! {
-        div {
-            class: "p-4 bg-green-700 rounded-lg shadow-md text-white flex justify-between items-center",
-            style: "display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px 20px;",
-
-            // Headers #1
-            div { style: "font-weight: bold;", "CO2 Sensor" }
-            div { "ID: {sensor.get_board_id_string()}" }
-            div { "" }
-            div { "" }
-            div { "" }
-            div { "" }
-            div { "" }
-            div { "" }
-            hr { class: "col-span-8 border-white/20 my-2" }
-
-            // Headers #2
-            div { style: "font-weight: bold;", "CO2" }
-            div { style: "font-weight: bold;", "" }
-            div { style: "font-weight: bold;", "" }
-            div { style: "font-weight: bold;", "VOC" }
-            div { style: "font-weight: bold;", "Humidity" }
-            div { style: "font-weight: bold;", "Temp" }
-            div { style: "font-weight: bold;", "Pressure" }
-            div { style: "font-weight: bold;", "Light" }
-
-            // Data Row
-            div { "{sensor.get_co2()} ppm" }
-            div { "" }
-            div { "" }
-            div { "{sensor.get_voc_view()}" }
-            div { "{sensor.get_hum():.0} %rh" }
-            div { "{sensor.get_temp()} °C" }
-            div { "{sensor.get_bar():.0} hPA" }
-            div { "{sensor.get_als()} Lux" }
-        }
-    }
-}
-
-#[component]
-fn SensorPanelPM(sensor: HibouAir) -> Element {
-    rsx! {
-        div {
-            class: "p-4 bg-green-700 rounded-lg shadow-md text-white flex justify-between items-center",
-            style: "display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px 20px;",
-
-            // Headers #1
-            div { style: "font-weight: bold;", "PM Sensor" }
-            div { "ID: {sensor.get_board_id_string()}" }
-            div { "" }
-            div { "" }
-            div { "" }
-            div { "" }
-            div { "" }
-            div { "" }
-            hr { class: "col-span-8 border-white/20 my-2" }
-
-            // Headers #2
-            div { style: "font-weight: bold;", "PM10" }
-            div { style: "font-weight: bold;", "PM2.5" }
-            div { style: "font-weight: bold;", "PM1.0" }
-            div { style: "font-weight: bold;", "VOC" }
-            div { style: "font-weight: bold;", "Humidity" }
-            div { style: "font-weight: bold;", "Temp" }
-            div { style: "font-weight: bold;", "Pressure" }
-            div { style: "font-weight: bold;", "Light" }
-
-            // Data Row
-            div { "{sensor.get_pm10()} μg/m³" }
-            div { "{sensor.get_pm2_5()} μg/m³" }
-            div { "{sensor.get_pm1_0()} μg/m³" }
-            div { "{sensor.get_voc_view()}" }
-            div { "{sensor.get_hum():.0} %rh" }
-            div { "{sensor.get_temp()} °C" }
-            div { "{sensor.get_bar():.0} hPa" }
-            div { "{sensor.get_als()} lux" }
-        }
-    }
-}   
-
-#[component]
-fn SensorPanel(sensor: HibouAir) -> Element {
-    rsx! {
-        div {
-            if sensor.get_board_type() == SensorType::CO2_SENSOR {
-                SensorPanelCO2 { sensor: sensor.clone() }
-            } else if sensor.get_board_type() == SensorType::PM_SENSOR {
-                SensorPanelPM { sensor: sensor.clone() }
-            } else {
-                div { "Unknown sensor type" }
-            }
-        }
-    }
-}   
 
 
 #[component]
