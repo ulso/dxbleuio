@@ -36,6 +36,44 @@ enum VocType {
     Iaq = 3,
 }
 
+#[derive(Debug, Clone, PartialEq, Copy)]
+enum SensorType {
+    Unknown = 0x00,
+    TEMP_HUM_SENSOR = 0x02,
+    PM_SENSOR = 0x03,
+    CO2_SENSOR = 0x04,
+    NO2_OUTDOOR_WIFI = 0x05,
+    CO2_BATTERY = 0x06,
+    NO2_OUTDOOR_LTEM_NBIOT = 0x07,
+    PIR_SENSOR = 0x08,
+    CO2_NOISE = 0x09,
+    DUO_MASTER = 0x0A,
+    DUO_SLAVE = 0x0B,
+    MATRIX = 0x14,
+}
+
+impl TryFrom<i64> for SensorType {
+    type Error = &'static str;
+
+    fn try_from(value: i64) -> std::result::Result<Self, Self::Error> {
+        match value {
+            0x00 => Ok(SensorType::Unknown),
+            0x02 => Ok(SensorType::TEMP_HUM_SENSOR),
+            0x03 => Ok(SensorType::PM_SENSOR),
+            0x04 => Ok(SensorType::CO2_SENSOR),
+            0x05 => Ok(SensorType::NO2_OUTDOOR_WIFI),
+            0x06 => Ok(SensorType::CO2_BATTERY),
+            0x07 => Ok(SensorType::NO2_OUTDOOR_LTEM_NBIOT),
+            0x08 => Ok(SensorType::PIR_SENSOR),
+            0x09 => Ok(SensorType::CO2_NOISE),
+            0x0A => Ok(SensorType::DUO_MASTER),
+            0x0B => Ok(SensorType::DUO_SLAVE),
+            0x14 => Ok(SensorType::MATRIX),
+            _ => Err("Unkown sensor type"),
+        }
+    }
+}
+
 // #[derive(Debug, Clone, PartialEq, Copy)]
 #[repr(C, packed)]
 #[derive(FromBytes, Unaligned, Immutable, KnownLayout, Debug, Clone, Copy, PartialEq)]
@@ -106,16 +144,25 @@ impl HibouAir {
         format!("{:02X}", self.get_id())
     }
 
-    // Return board type as u8.
-    fn get_board_type(&self) -> u8 {
-        self.board_type
+    // Return board type as SensorType.
+    fn get_board_type(&self) -> SensorType {
+        SensorType::try_from(self.board_type as i64).unwrap_or(SensorType::Unknown) 
     }
 
     // Return board type as string.
     fn get_board_type_string(&self) -> String {
-        match self.board_type {
-            0x03 => "PM".to_string(),
-            0x04 => "CO2".to_string(),
+        match self.get_board_type() {
+            SensorType::PM_SENSOR => "PM".to_string(),
+            SensorType::CO2_SENSOR => "CO2".to_string(),
+            SensorType::TEMP_HUM_SENSOR => "Temp/Hum".to_string(),
+            SensorType::NO2_OUTDOOR_WIFI => "NO2 Outdoor WiFi".to_string(),
+            SensorType::CO2_BATTERY => "CO2 Battery".to_string(),
+            SensorType::NO2_OUTDOOR_LTEM_NBIOT => "NO2 Outdoor LTEM NBIOT".to_string(),
+            SensorType::PIR_SENSOR => "PIR".to_string(),
+            SensorType::CO2_NOISE => "CO2 Noise".to_string(),
+            SensorType::DUO_MASTER => "Duo Master".to_string(),
+            SensorType::DUO_SLAVE => "Duo Slave".to_string(),
+            SensorType::MATRIX => "Matrix".to_string(),
             _ => "Unknown".to_string(),
         }
     }
@@ -246,79 +293,89 @@ fn add_sensor(mut sens: Signal<HashMap<u32, HibouAir>>, sensor: HibouAir) {
     });
 }
 
+
 #[component]
-fn SensorPanel(sensor: HibouAir) -> Element {
+fn SensorPanelCO2(sensor: HibouAir) -> Element {
     rsx! {
         div {
             class: "p-4 bg-green-700 rounded-lg shadow-md text-white flex justify-between items-center",
             style: "display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px 20px;",
 
-            if sensor.get_board_type() == 0x04 {
-                // Headers #1
-                div { style: "font-weight: bold;", "CO2 Sensor" }
-                div { "ID: {sensor.get_board_id_string()}" }
-                div { "" }
-                div { "" }
-                div { "" }
-                div { "" }
-                div { "" }
-                div { "" }
-                hr { class: "col-span-8 border-white/20 my-2" }
+            // Headers #1
+            div { style: "font-weight: bold;", "CO2 Sensor" }
+            div { "ID: {sensor.get_board_id_string()}" }
+            div { "" }
+            div { "" }
+            div { "" }
+            div { "" }
+            div { "" }
+            div { "" }
+            hr { class: "col-span-8 border-white/20 my-2" }
 
-                // Headers #2
-                div { style: "font-weight: bold;", "CO2" }
-                div { style: "font-weight: bold;", "" }
-                div { style: "font-weight: bold;", "" }
-                div { style: "font-weight: bold;", "VOC" }
-                div { style: "font-weight: bold;", "Humidity" }
-                div { style: "font-weight: bold;", "Temp" }
-                div { style: "font-weight: bold;", "Pressure" }
-                div { style: "font-weight: bold;", "Light" }
+            // Headers #2
+            div { style: "font-weight: bold;", "CO2" }
+            div { style: "font-weight: bold;", "" }
+            div { style: "font-weight: bold;", "" }
+            div { style: "font-weight: bold;", "VOC" }
+            div { style: "font-weight: bold;", "Humidity" }
+            div { style: "font-weight: bold;", "Temp" }
+            div { style: "font-weight: bold;", "Pressure" }
+            div { style: "font-weight: bold;", "Light" }
 
-                // Data Row
-                div { "{sensor.get_co2()} ppm" }
-                div { "" }
-                div { "" }
-                div { "{sensor.get_voc_view()}" }
-                div { "{sensor.get_hum():.0} %rh" }
-                div { "{sensor.get_temp()} °C" }
-                div { "{sensor.get_bar():.0} hPA" }
-                div { "{sensor.get_als()} Lux" }
-            } else if sensor.get_board_type() == 0x03 {
-                // Headers #1
-                div { style: "font-weight: bold;", "PM Sensor" }
-                div { "ID: {sensor.get_board_id_string()}" }
-                div { "" }
-                div { "" }
-                div { "" }
-                div { "" }
-                div { "" }
-                div { "" }
-                hr { class: "col-span-8 border-white/20 my-2" }
-
-                // Headers #2
-                div { style: "font-weight: bold;", "PM10" }
-                div { style: "font-weight: bold;", "PM2.5" }
-                div { style: "font-weight: bold;", "PM1.0" }
-                div { style: "font-weight: bold;", "VOC" }
-                div { style: "font-weight: bold;", "Humidity" }
-                div { style: "font-weight: bold;", "Temp" }
-                div { style: "font-weight: bold;", "Pressure" }
-                div { style: "font-weight: bold;", "Light" }
-
-                // Data Row
-                div { "{sensor.get_pm10()} μg/m³" }
-                div { "{sensor.get_pm2_5()} μg/m³" }
-                div { "{sensor.get_pm1_0()} μg/m³" }
-                div { "{sensor.get_voc_view()}" }
-                div { "{sensor.get_hum():.0} %rh" }
-                div { "{sensor.get_temp()} °C" }
-                div { "{sensor.get_bar():.0} hPa" }
-                div { "{sensor.get_als()} lux" }
-            }
+            // Data Row
+            div { "{sensor.get_co2()} ppm" }
+            div { "" }
+            div { "" }
+            div { "{sensor.get_voc_view()}" }
+            div { "{sensor.get_hum():.0} %rh" }
+            div { "{sensor.get_temp()} °C" }
+            div { "{sensor.get_bar():.0} hPA" }
+            div { "{sensor.get_als()} Lux" }
         }
     }
 }
+
+#[component]
+fn SensorPanelPM(sensor: HibouAir) -> Element {
+    rsx! {
+        div {
+            class: "p-4 bg-green-700 rounded-lg shadow-md text-white flex justify-between items-center",
+            style: "display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px 20px;",
+
+            // Headers #1
+            div { style: "font-weight: bold;", "PM Sensor" }
+            div { "ID: {sensor.get_board_id_string()}" }
+            div { "" }
+            div { "" }
+            div { "" }
+            div { "" }
+            div { "" }
+            div { "" }
+            hr { class: "col-span-8 border-white/20 my-2" }
+
+            // Headers #2
+            div { style: "font-weight: bold;", "PM10" }
+            div { style: "font-weight: bold;", "PM2.5" }
+            div { style: "font-weight: bold;", "PM1.0" }
+            div { style: "font-weight: bold;", "VOC" }
+            div { style: "font-weight: bold;", "Humidity" }
+            div { style: "font-weight: bold;", "Temp" }
+            div { style: "font-weight: bold;", "Pressure" }
+            div { style: "font-weight: bold;", "Light" }
+
+            // Data Row
+            div { "{sensor.get_pm10()} μg/m³" }
+            div { "{sensor.get_pm2_5()} μg/m³" }
+            div { "{sensor.get_pm1_0()} μg/m³" }
+            div { "{sensor.get_voc_view()}" }
+            div { "{sensor.get_hum():.0} %rh" }
+            div { "{sensor.get_temp()} °C" }
+            div { "{sensor.get_bar():.0} hPa" }
+            div { "{sensor.get_als()} lux" }
+        }
+    }
+}   
+
 
 #[component]
 pub fn Hero(port_name: String) -> Element {
@@ -535,8 +592,11 @@ pub fn Hero(port_name: String) -> Element {
                         // Returnera rsx! från blocket
                         rsx! {
                             div {
-                                // pre { "{s}" }
-                                SensorPanel { sensor: sensor.clone() }
+                                if sensor.get_board_type() == SensorType::CO2_SENSOR {
+                                    SensorPanelCO2 { sensor: sensor.clone() }
+                                } else if sensor.get_board_type() == SensorType::PM_SENSOR {
+                                    SensorPanelPM { sensor: sensor.clone() }
+                                }
                             }
                         }
                     }
