@@ -376,6 +376,21 @@ fn SensorPanelPM(sensor: HibouAir) -> Element {
     }
 }   
 
+#[component]
+fn SensorPanel(sensor: HibouAir) -> Element {
+    rsx! {
+        div {
+            if sensor.get_board_type() == SensorType::CO2_SENSOR {
+                SensorPanelCO2 { sensor: sensor.clone() }
+            } else if sensor.get_board_type() == SensorType::PM_SENSOR {
+                SensorPanelPM { sensor: sensor.clone() }
+            } else {
+                div { "Unknown sensor type" }
+            }
+        }
+    }
+}   
+
 
 #[component]
 pub fn Hero(port_name: String) -> Element {
@@ -589,14 +604,9 @@ pub fn Hero(port_name: String) -> Element {
                 // gap-8 (2rem/32px) adds space between each group of 3.
                 for sensor in hibs.read().values() {
                     {
-                        // Returnera rsx! från blocket
                         rsx! {
                             div {
-                                if sensor.get_board_type() == SensorType::CO2_SENSOR {
-                                    SensorPanelCO2 { sensor: sensor.clone() }
-                                } else if sensor.get_board_type() == SensorType::PM_SENSOR {
-                                    SensorPanelPM { sensor: sensor.clone() }
-                                }
+                                SensorPanel { sensor: sensor.clone() }
                             }
                         }
                     }
