@@ -17,3 +17,16 @@ The kinds of sensor that could be monitored by this application are the ones fro
 ![Screenshot](/img/SCR-20260120-lqgp.png)
 
 The application has been tested on macos and on my Raspberry Pi 5 with the latest Trixie distro.
+
+## Project Structure
+The src/ directory is organized into functional modules:
+
+- src/components/: Contains UI components.
+- dashboard.rs: The main dashboard view (formerly Hero component).
+- sensor_panel.rs: The sensor display component.
+- src/models/: Contains data models and parsing logic.
+- bleuio.rs: BleuIO dongle definitions and response parsing.
+- hibouair.rs: HibouAir sensor data structure and parsing.
+- src/hooks/: Contains custom Dioxus hooks.
+- use_bleuio.rs: Encapsulates the serial port communication logic.
+- src/main.rs: Handles window configuration and mounting the App.
