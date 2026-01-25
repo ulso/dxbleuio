@@ -71,9 +71,9 @@ fn App() -> Element {
 }
 
 // Utility function for sending text messages to the 'log' pane.
-fn logga(mut log: Signal<String>, msg: &str) {
-    log.with_mut(|l| l.push_str(&format!("{}", msg)));
-}
+// fn logga(mut log: Signal<String>, msg: &str) {
+//     log.with_mut(|l| l.push_str(&format!("{}", msg)));
+// }
 
 fn add_sensor(mut sens: Signal<HashMap<u32, HibouAir>>, sensor: HibouAir) {
     sens.with_mut(|s| {
@@ -91,8 +91,7 @@ pub fn Hero(port_name: String) -> Element {
     
     let _serial_task = use_coroutine(move |mut external_rx: UnboundedReceiver<BleuIOCommand>| {
         let port_name_for_async = port_name.clone();
-        let log_handle = log;
-        let mut sensors = sensor_hash.clone();
+        // let log_handle = log;
 
         async move {
             // let mut app_state: AppState = AppState::OpenPort;
@@ -104,7 +103,7 @@ pub fn Hero(port_name: String) -> Element {
                     p.set_rts(true).ok();
                     p},
                 Err(e) => {
-                    logga(log_handle, &format!("Error: {}\n", e));
+                    // logga(log_handle, &format!("Error: {}\n", e));
                     return;
                 }
             };
@@ -117,7 +116,7 @@ pub fn Hero(port_name: String) -> Element {
             // Current coomunicating state with the BleuIO dongle.
             let mut last_cmd: &[u8] = AT;
 
-            logga(log_handle, "Port öppen. Väntar...\n");
+            // logga(log_handle, "Port öppen. Väntar...\n");
 
             // Skapa en intern kanal
             let (internal_tx, mut internal_rx) = futures_channel::mpsc::unbounded::<BleuIOCommand>();
@@ -168,7 +167,7 @@ pub fn Hero(port_name: String) -> Element {
                                                         last_cmd = AT_FINDSCANDATA;
                                                     }
                                                 } else {
-                                                    logga(log_handle, &format!("Operation slutförd med felkod {}\n", last_error));
+                                                    // logga(log_handle, &format!("Operation slutförd med felkod {}\n", last_error));
                                                 }
                                             },
                                             BleuIOResponseType::ScanFindDataResponse => {
@@ -178,19 +177,10 @@ pub fn Hero(port_name: String) -> Element {
                                                 if data.len() > 60 {
                                                     match HibouAir::from_hex(data) {
                                                         Ok(hibou) => {
-                                                            let id = hibou.get_id();
-                                                            let voc_type = hibou.get_voc_type();
-                                                            // if voc_type == 2 || voc_type == 3 {
-                                                                sensors.insert(id, hibou);
-                                                                add_sensor(hibs, hibou);
-                                                                // let hibou2 = sensors.get(&hibou.get_id()).unwrap();
-                                                                // logga(log_handle, &format!("HibouAIR data: {}\n", hibou2.get_board_id_string()));
-                                                                let n = sensors.clone().len();
-                                                                logga(log_handle, &format!("HibouAIR-enheter funna: {}\n", n));
-                                                            // }
+                                                            add_sensor(hibs, hibou);
                                                         },
                                                         Err(e) => {
-                                                            logga(log_handle, &format!("Fel vid tolkning av HibouAIR-data: {}\n", e));
+                                                            // logga(log_handle, &format!("Fel vid tolkning av HibouAIR-data: {}\n", e));
                                                         }
                                                     }
                                                 }
@@ -226,12 +216,12 @@ pub fn Hero(port_name: String) -> Element {
                                 }
                             }
                             Ok(Err(e)) => {
-                                logga(log_handle, &format!("Läsfel: {}\n", e));
+                                // logga(log_handle, &format!("Läsfel: {}\n", e));
                                 break;
                             }
                             Err(_) => {
                                 // Detta händer om 5 sekunder går utan att read_line blir klar
-                                logga(log_handle, "Timeout.\n");
+                                // logga(log_handle, "Timeout.\n");
                             }
                         }
                     }
