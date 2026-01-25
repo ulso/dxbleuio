@@ -14,25 +14,16 @@ pub fn Dashboard(port_name: String) -> Element {
     
     let _serial_task = use_bleuio(port_name, hibs);
 
-    let mut show_log = use_signal(|| false);
-
     rsx! {
         div {
             // img { src: HEADER_SVG, id: "header" }
             // style: "font-family: monospace; padding: 20px;",
             // h1 { "HibouAIR Monitor" }
-            if show_log() {
+            if cfg!(feature = "logging") {
                 div { style: "background: rgb(128, 128, 128); height: 300px; overflow-y: scroll; margin-bottom: 10px;",
                     pre { "{log}" }
                 }
-            }
 
-            // button {
-            //     class: "border p-1 rounded-md bg-gray-500 mr-2",
-            //     onclick: move |_| show_log.toggle(),
-            //     {if show_log() { "Hide log" } else { "Show log" }}
-            // }
-            if show_log() {
                 button {
                     class: "border p-1 rounded-md bg-gray-500",
                     onclick: move |_| log.set(String::new()),

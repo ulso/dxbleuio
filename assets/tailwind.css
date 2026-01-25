@@ -203,9 +203,6 @@
   .my-2 {
     margin-block: calc(var(--spacing) * 2);
   }
-  .mr-2 {
-    margin-right: calc(var(--spacing) * 2);
-  }
   .flex {
     display: flex;
   }
