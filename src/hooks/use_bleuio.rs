@@ -22,6 +22,7 @@ fn add_sensor(mut sens: Signal<HashMap<u32, HibouAir>>, sensor: HibouAir) {
 }
 
 // Utility function for logging (commented out in original, but might be useful)
+#[cfg(feature = "logging")]
 fn logga(mut log: Signal<String>, msg: &str) {
     // println!("{}", msg); // Debug print
     // log.with_mut(|l| l.push_str(msg));
