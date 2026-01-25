@@ -1,6 +1,6 @@
 #![allow(non_snake_case)]
 use dioxus::prelude::*;
-use crate::hibouair::*;
+use crate::models::hibouair::*;
 
 
 #[component]

@@ -5,6 +5,14 @@ use std::convert::TryFrom;
 const BLUEIO_VID: u16 = 0x2dcf;
 const BLUEIO_PID: u16 = 0x6002;
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum BleuIOCommand {
+    At,
+    AtI,
+    AtCentral,
+    AtFindscandata,
+}
+
 #[derive(PartialEq)]
 pub enum BleuIOResponseType {
     UnknownResponse,            // Unknown command found in JSON string
