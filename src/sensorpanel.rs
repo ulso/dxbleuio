@@ -15,13 +15,6 @@ fn SensorPanelCO2(sensor: HibouAir) -> Element {
             div { class: "col-span-4 text-left", "CO2: {sensor.get_co2()} ppm" }
             // hr { class: "col-span-5 border-white/20 my-2" }
 
-            // Headers #2
-            // div { style: "font-weight: bold;", "VOC" }
-            // div { style: "font-weight: bold;", "Humidity" }
-            // div { style: "font-weight: bold;", "Temp" }
-            // div { style: "font-weight: bold;", "Pressure" }
-            // div { style: "font-weight: bold;", "Light" }
-
             // Data Row
             div { "VOC: {sensor.get_voc_view()}" }
             div { "Humid: {sensor.get_hum():.0} %rh" }
@@ -46,13 +39,6 @@ fn SensorPanelPM(sensor: HibouAir) -> Element {
             div { "PM1.0: {sensor.get_pm1_0()} μg/m³" }
             div { "" }
             // hr { class: "col-span-5 border-white/20 my-2" }
-
-            // Headers #2
-            // div { style: "font-weight: bold;", "VOC" }
-            // div { style: "font-weight: bold;", "Humidity" }
-            // div { style: "font-weight: bold;", "Temp" }
-            // div { style: "font-weight: bold;", "Pressure" }
-            // div { style: "font-weight: bold;", "Light" }
 
             // Data Row
             div { "VOC: {sensor.get_voc_view()}" }
