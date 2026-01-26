@@ -192,4 +192,14 @@ mod tests {
         let v = parse_bleuio_result(json).unwrap();
         assert_eq!(v["cmd"], "AT+FINDSCANDATA=FF5B07=2");
     }
+
+    #[test]
+    fn test_get_bleuio_result_ack() {
+        let json = r#"{"A":38,"err":0,"errMsg":"ok"}"#;
+        let v = parse_bleuio_result(json).unwrap();
+        let result_type = get_bleuio_result_type(&v);
+        assert_eq!(result_type, BleuIOResponseType::AcknowledgementResponse);
+        assert_eq!(v["err"], 0);
+        assert_eq!(v["errMsg"], "ok");
+    }
 }
