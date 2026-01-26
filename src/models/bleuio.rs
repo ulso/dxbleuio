@@ -13,7 +13,7 @@ pub enum BleuIOCommand {
     AtFindscandata,
 }
 
-#[derive(PartialEq)]
+#[derive(Debug,PartialEq)]
 pub enum BleuIOResponseType {
     UnknownResponse,            // Unknown command found in JSON string
     CommandResponse,            // {"C":Command Index,"cmd":"command"}
@@ -143,4 +143,53 @@ pub fn get_bleuio_result_type(v: &Value) -> BleuIOResponseType {
 pub fn parse_bleuio_result(json: &str) -> Result<Value> {
     let v: Value = serde_json::from_str(json)?; 
     Ok(v)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_is_bleuio() {
+        let info = UsbPortInfo {
+            vid: BLUEIO_VID,
+            pid: BLUEIO_PID,
+            serial_number: None,
+            manufacturer: None,
+            product: None,
+        };
+        assert!(is_bleuio(&info));
+
+        let wrong_info = UsbPortInfo {
+            vid: 0x1234,
+            pid: 0x5678,
+            serial_number: None,
+            manufacturer: None,
+            product: None,
+        };
+        assert!(!is_bleuio(&wrong_info));
+    }
+
+    #[test]
+    fn test_parse_bleuio_result() {
+        let json = r#"{"C":38,"cmd":"AT+FINDSCANDATA=FF5B07=2"}"#;
+        let result = parse_bleuio_result(json);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_get_bleuio_result_type() {
+        let json = r#"{"C":38,"cmd":"AT+FINDSCANDATA=FF5B07=2"}"#;
+        let v = parse_bleuio_result(json).unwrap();
+        let result_type = get_bleuio_result_type(&v);
+        assert_eq!(result_type, BleuIOResponseType::CommandResponse);
+        assert_eq!(v["cmd"], "AT+FINDSCANDATA=FF5B07=2");
+    }
+
+    #[test]
+    fn test_get_bleuio_result_cmd() {
+        let json = r#"{"C":38,"cmd":"AT+FINDSCANDATA=FF5B07=2"}"#;
+        let v = parse_bleuio_result(json).unwrap();
+        assert_eq!(v["cmd"], "AT+FINDSCANDATA=FF5B07=2");
+    }
 }
