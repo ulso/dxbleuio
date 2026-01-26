@@ -4,9 +4,13 @@ use serial2_tokio::SerialPort;
 use tokio::io::{BufReader, AsyncBufReadExt, AsyncWriteExt};
 use tokio::time::{timeout, Duration};
 use futures_util::StreamExt;
+use chrono::{DateTime, Local};
 
 use crate::models::bleuio::*;
 use crate::models::hibouair::*;
+
+pub static COUNT: GlobalSignal<i32> = Signal::global(|| 0);
+pub static LAST_TIME: GlobalSignal<DateTime<Local>> = Signal::global(|| Local::now());
 
 const ATE0: &[u8; 6] = b"ATE0\r\n";
 const ATV1: &[u8; 6] = b"ATV1\r\n";
@@ -118,6 +122,7 @@ pub fn use_bleuio(
                                                     match HibouAir::from_hex(data) {
                                                         Ok(hibou) => {
                                                             add_sensor(hibs, hibou);
+                                                            *LAST_TIME.write() = Local::now();
                                                         },
                                                         Err(_e) => {
                                                             // logga(log_handle, &format!("Fel vid tolkning av HibouAIR-data: {}\n", e));
