@@ -30,3 +30,19 @@ The src/ directory is organized into functional modules:
 - src/hooks/: Contains custom Dioxus hooks.
 - use_bleuio.rs: Encapsulates the serial port communication logic.
 - src/main.rs: Handles window configuration and mounting the App.
+
+```
+src/
+├── components/
+│   ├── dashboard.rs
+│   ├── mod.rs
+│   └── sensor_panel.rs
+├── hooks/
+│   ├── mod.rs
+│   └── use_bleuio.rs
+├── models/
+│   ├── bleuio.rs
+│   ├── hibouair.rs
+│   └── mod.rs
+└── main.rs
+````
