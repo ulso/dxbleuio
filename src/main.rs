@@ -16,6 +16,9 @@ static CSS: Asset = asset!("/assets/main.css");
 const TAILWIND_CSS: Asset = asset!("/assets/tailwind.css");
 
 fn main() {
+    #[cfg(target_os = "macos")]
+    macos_app_nap::prevent(); 
+
     // 1. Define your window configuration
     let window = WindowBuilder::new()
         .with_title("Sensor Dashboard")
