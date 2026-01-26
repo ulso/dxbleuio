@@ -11,6 +11,7 @@ use crate::models::hibouair::*;
 
 pub static COUNT: GlobalSignal<i32> = Signal::global(|| 0);
 pub static LAST_TIME: GlobalSignal<DateTime<Local>> = Signal::global(|| Local::now());
+pub static LAST_TIME_STR: GlobalSignal<String> = Signal::global(|| String::new());
 
 const ATE0: &[u8; 6] = b"ATE0\r\n";
 const ATV1: &[u8; 6] = b"ATV1\r\n";
@@ -123,6 +124,8 @@ pub fn use_bleuio(
                                                         Ok(hibou) => {
                                                             add_sensor(hibs, hibou);
                                                             *LAST_TIME.write() = Local::now();
+                                                            *LAST_TIME_STR.write() = LAST_TIME.read().format("%Y-%m-%d %H:%M:%S").to_string();
+                                                            COUNT.with_mut(|c| *c += 1);
                                                         },
                                                         Err(_e) => {
                                                             // logga(log_handle, &format!("Fel vid tolkning av HibouAIR-data: {}\n", e));
