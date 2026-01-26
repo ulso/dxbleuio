@@ -4,12 +4,10 @@ use serial2_tokio::SerialPort;
 use tokio::io::{BufReader, AsyncBufReadExt, AsyncWriteExt};
 use tokio::time::{timeout, Duration};
 use futures_util::StreamExt;
-use std::convert::TryFrom;
 
 use crate::models::bleuio::*;
 use crate::models::hibouair::*;
 
-const AT: &[u8; 4] = b"AT\r\n";
 const ATE0: &[u8; 6] = b"ATE0\r\n";
 const ATV1: &[u8; 6] = b"ATV1\r\n";
 const AT_FINDSCANDATA: &[u8;  24] = b"AT+FINDSCANDATA=FF5B07\r\n";
@@ -58,7 +56,7 @@ pub fn use_bleuio(
             let mut read_buffer = String::new();
 
             // Current coomunicating state with the BleuIO dongle.
-            let mut last_cmd: &[u8] = AT;
+            let mut last_cmd: &[u8];
 
             // logga(log_handle, "Port öppen. Väntar...\n");
 
