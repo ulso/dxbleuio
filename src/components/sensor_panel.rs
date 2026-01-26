@@ -1,7 +1,7 @@
 #![allow(non_snake_case)]
 use dioxus::prelude::*;
 use crate::models::hibouair::*;
-use crate::hooks::use_bleuio::LAST_TIME;
+use crate::hooks::use_bleuio::LAST_TIME_STR;
 
 #[component]
 fn SensorPanelCO2(sensor: HibouAir) -> Element {
@@ -9,7 +9,7 @@ fn SensorPanelCO2(sensor: HibouAir) -> Element {
         div {
             class: "p-4 bg-green-700 rounded-lg shadow-md text-white flex justify-between items-center",
             style: "display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px 20px;",
-            title: "Sensor ID: {LAST_TIME}",
+            title: "Last seen: {LAST_TIME_STR}",
 
             // Headers #1
             div { class: "col-span-1", "ID: {sensor.get_board_id_string()}" }
@@ -32,6 +32,7 @@ fn SensorPanelPM(sensor: HibouAir) -> Element {
         div {
             class: "p-4 bg-green-700 rounded-lg shadow-md text-white flex justify-between items-center",
             style: "display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px 20px;",
+            title: "Last seen: {LAST_TIME_STR}",
 
             // Headers #1
             div { "ID: {sensor.get_board_id_string()}" }
