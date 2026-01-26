@@ -12,7 +12,7 @@ The kinds of sensor that could be monitored by this application are the ones fro
 5. Starts scanning for sensor advertisment with the 'AT+FINDSCANDATA=FF5B07' command.
 
 ## Screenshot
-![Screenshot](/img/SCR-20260119-mwod.png)
+![Screenshot](/img/SCR-20260126-lahq.png)
 
 ![Screenshot](/img/SCR-20260120-lqgp.png)
 
