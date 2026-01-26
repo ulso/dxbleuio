@@ -65,7 +65,6 @@ pub struct HibouAir {
     co2: u16,           // carbon dioxide
     voc_type: u8,       // 0 = old, 1 = resistance, 2 = ppm, 3 = IAQ
 }
-// 0201061BFF5B07050422005A0000BA27C60017013E0000000000000001C002
 
 impl HibouAir {
     /// Tar en hex-sträng och försöker konvertera den till en HibouAir-struct
@@ -81,6 +80,19 @@ impl HibouAir {
 
         // 3. Returnera den kopierade structen
         Ok(data)
+    }
+
+    #[cfg(feature = "using_ble")]
+    /// Tar en byte-slice från en BLE-annons och försöker konvertera den till en HibouAir-struct
+    pub fn from_ble(data: &[u8]) -> std::result::Result<Self, String> {
+        if data.len() < std::mem::size_of::<HibouAir>() {
+            return Err("Datan är för kort för att matcha HibouAir-formatet".to_string());
+        }
+
+        let (hibouair, _rest) = Self::read_from_prefix(data)
+            .map_err(|_| "Misslyckades med att läsa HibouAir från BLE-data")?;
+
+        Ok(hibouair)
     }
 
     // Return a string representation of the HibouAir struct.
@@ -106,14 +118,14 @@ impl HibouAir {
 
     // Getter methods for each field.
 
-    // Return board ID as u32.
-    pub fn get_id(&self) -> u32 {
-        ((self.board_id[0] as u32) << 16) | ((self.board_id[1] as u32) << 8) | (self.board_id[2] as u32)
+    // Return MFID of device.
+    pub fn get_mfid(&self) -> u16 {
+        self.mfid
     }
 
-    // Return board ID as hex string.
-    pub fn get_board_id_string(&self) -> String {
-        format!("{:02X}", self.get_id())
+    // Return beacon number.
+    pub fn get_beacon_nr(&self) -> u8 {
+        self.beacon_nr
     }
 
     // Return board type as SensorType.
@@ -137,6 +149,16 @@ impl HibouAir {
             SensorType::Matrix => "Matrix".to_string(),
             _ => "Unknown".to_string(),
         }
+    }
+
+    // Return board ID as u32.
+    pub fn get_id(&self) -> u32 {
+        ((self.board_id[0] as u32) << 16) | ((self.board_id[1] as u32) << 8) | (self.board_id[2] as u32)
+    }
+
+    // Return board ID as hex string.
+    pub fn get_board_id_string(&self) -> String {
+        format!("{:02X}", self.get_id())
     }
 
     // Return ambient light sensor value.
@@ -217,3 +239,37 @@ impl HibouAir {
     }
 }
 
+// 0201061BFF5B07050422005A0000BA27C60017013E0000000000000001C002
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_hibouair_from_hex() {
+        let hex_str = "0201061BFF5B07050422005A0000BA27C60017013E0000000000000001C002";
+        match HibouAir::from_hex(hex_str) {
+            Ok(hibouair) => {
+                assert_eq!(hibouair.get_mfid(), 0x075B, "Checking MFID value");
+                assert_eq!(hibouair.get_beacon_nr(), 0x05, "Checking beacon number");
+                assert_eq!(hibouair.get_board_type(), SensorType::Co2Sensor, "Checking board type");
+                assert_eq!(hibouair.get_id(), 0x22005A, "Checking board ID value");
+                assert_eq!(hibouair.get_als(), 0x0000, );
+                assert_eq!(hibouair.get_bar(), 1017.0, "Checking pressure value");
+                assert_eq!(hibouair.get_temp(), 19.8, "Checking temperature value");
+                assert_eq!(hibouair.get_hum(), 27.9, "Checking humidity value");
+                assert_eq!(hibouair.get_voc(), 0.62, "Checking VOC value");
+                assert_eq!(hibouair.get_pm1_0(), 0.0, "Checking PM1.0 value");
+                assert_eq!(hibouair.get_pm2_5(), 0.0, "Checking PM2.5 value");
+                assert_eq!(hibouair.get_pm10(), 0.0, "Checking PM10 value");
+                assert_eq!(hibouair.get_co2(), 448, "Checking CO2 value");
+                assert_eq!(hibouair.get_voc_type(), 2, "Checking VOC type");
+            },
+            Err(_) => panic!("Unexpected error parsing HibouAir from hex"),
+        }
+    }
+
+    #[cfg(feature = "using_ble")]
+    #[test]
+    fn test_hibouair_from_ble() {
+        todo!();
+    }
+}
