@@ -84,7 +84,7 @@ impl HibouAir {
     }
 
     // Return a string representation of the HibouAir struct.
-    fn to_string(&self) -> String {
+    pub fn to_string(&self) -> String {
         format!(
             "HibouAir(mfid: {}, beacon_nr: {}, board_type: {}, board_id: {:02X?}, als: {}, bar: {}, temp: {}, hum: {}, voc: {}, pm1_0: {}, pm2_5: {}, pm10: {}, co2: {}, voc_type: {})",
             {self.mfid},
