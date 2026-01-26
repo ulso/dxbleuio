@@ -11,17 +11,17 @@ pub enum VocType {
 #[derive(Debug, Clone, PartialEq, Copy)]
 pub enum SensorType {
     Unknown = 0x00,
-    TEMP_HUM_SENSOR = 0x02,
-    PM_SENSOR = 0x03,
-    CO2_SENSOR = 0x04,
-    NO2_OUTDOOR_WIFI = 0x05,
-    CO2_BATTERY = 0x06,
-    NO2_OUTDOOR_LTEM_NBIOT = 0x07,
-    PIR_SENSOR = 0x08,
-    CO2_NOISE = 0x09,
-    DUO_MASTER = 0x0A,
-    DUO_SLAVE = 0x0B,
-    MATRIX = 0x14,
+    TempHumSensor = 0x02,
+    PmSensor = 0x03,
+    Co2Sensor = 0x04,
+    No2OutdoorWifi = 0x05,
+    Co2Battery = 0x06,
+    No2OutdoorLtemNbiot = 0x07,
+    PirSensor = 0x08,
+    Co2Noise = 0x09,
+    DuoMaster = 0x0A,
+    DuoSlave = 0x0B,
+    Matrix = 0x14,
 }
 
 impl TryFrom<i64> for SensorType {
@@ -30,17 +30,17 @@ impl TryFrom<i64> for SensorType {
     fn try_from(value: i64) -> std::result::Result<Self, Self::Error> {
         match value {
             0x00 => Ok(SensorType::Unknown),
-            0x02 => Ok(SensorType::TEMP_HUM_SENSOR),
-            0x03 => Ok(SensorType::PM_SENSOR),
-            0x04 => Ok(SensorType::CO2_SENSOR),
-            0x05 => Ok(SensorType::NO2_OUTDOOR_WIFI),
-            0x06 => Ok(SensorType::CO2_BATTERY),
-            0x07 => Ok(SensorType::NO2_OUTDOOR_LTEM_NBIOT),
-            0x08 => Ok(SensorType::PIR_SENSOR),
-            0x09 => Ok(SensorType::CO2_NOISE),
-            0x0A => Ok(SensorType::DUO_MASTER),
-            0x0B => Ok(SensorType::DUO_SLAVE),
-            0x14 => Ok(SensorType::MATRIX),
+            0x02 => Ok(SensorType::TempHumSensor),
+            0x03 => Ok(SensorType::PmSensor),
+            0x04 => Ok(SensorType::Co2Sensor),
+            0x05 => Ok(SensorType::No2OutdoorWifi),
+            0x06 => Ok(SensorType::Co2Battery),
+            0x07 => Ok(SensorType::No2OutdoorLtemNbiot),
+            0x08 => Ok(SensorType::PirSensor),
+            0x09 => Ok(SensorType::Co2Noise),
+            0x0A => Ok(SensorType::DuoMaster),
+            0x0B => Ok(SensorType::DuoSlave),
+            0x14 => Ok(SensorType::Matrix),
             _ => Err("Unkown sensor type"),
         }
     }
@@ -124,17 +124,17 @@ impl HibouAir {
     // Return board type as string.
     pub fn get_board_type_string(&self) -> String {
         match self.get_board_type() {
-            SensorType::PM_SENSOR => "PM".to_string(),
-            SensorType::CO2_SENSOR => "CO2".to_string(),
-            SensorType::TEMP_HUM_SENSOR => "Temp/Hum".to_string(),
-            SensorType::NO2_OUTDOOR_WIFI => "NO2 Outdoor WiFi".to_string(),
-            SensorType::CO2_BATTERY => "CO2 Battery".to_string(),
-            SensorType::NO2_OUTDOOR_LTEM_NBIOT => "NO2 Outdoor LTEM NBIOT".to_string(),
-            SensorType::PIR_SENSOR => "PIR".to_string(),
-            SensorType::CO2_NOISE => "CO2 Noise".to_string(),
-            SensorType::DUO_MASTER => "Duo Master".to_string(),
-            SensorType::DUO_SLAVE => "Duo Slave".to_string(),
-            SensorType::MATRIX => "Matrix".to_string(),
+            SensorType::PmSensor => "PM".to_string(),
+            SensorType::Co2Sensor => "CO2".to_string(),
+            SensorType::TempHumSensor => "Temp/Hum".to_string(),
+            SensorType::No2OutdoorWifi => "NO2 Outdoor WiFi".to_string(),
+            SensorType::Co2Battery => "CO2 Battery".to_string(),
+            SensorType::No2OutdoorLtemNbiot => "NO2 Outdoor LTEM NBIOT".to_string(),
+            SensorType::PirSensor => "PIR".to_string(),
+            SensorType::Co2Noise => "CO2 Noise".to_string(),
+            SensorType::DuoMaster => "Duo Master".to_string(),
+            SensorType::DuoSlave => "Duo Slave".to_string(),
+            SensorType::Matrix => "Matrix".to_string(),
             _ => "Unknown".to_string(),
         }
     }

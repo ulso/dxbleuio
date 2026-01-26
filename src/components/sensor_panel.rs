@@ -62,10 +62,10 @@ fn SensorPanelUnknown(sensor: HibouAir) -> Element {
 #[component]
 pub fn SensorPanel(sensor: HibouAir) -> Element {
     match sensor.get_board_type() {
-        SensorType::CO2_SENSOR => rsx! {
+        SensorType::Co2Sensor => rsx! {
             SensorPanelCO2 { sensor: sensor.clone() }
         },
-        SensorType::PM_SENSOR => rsx! {
+        SensorType::PmSensor => rsx! {
             SensorPanelPM { sensor: sensor.clone() }
         },
         _ => rsx! {
