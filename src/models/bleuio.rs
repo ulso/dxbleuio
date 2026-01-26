@@ -150,6 +150,21 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_find_bleuio() {
+        let path = find_bleuio();
+        // Since we can't guarantee a BleuIO device is connected during testing,
+        // we just check that the function runs without error and returns a string.
+        #[cfg(target_os = "macos")]
+            assert!(path.is_empty() || path.starts_with("/dev/cu"));
+                    
+        #[cfg(target_os = "linux")]
+            assert!(path.is_empty() || path.starts_with("/dev/tty"));
+                    
+        #[cfg(target_os = "windows")]
+            assert!(path.is_empty() || path.starts_with("COM"));
+    }
+
+    #[test]
     fn test_is_bleuio() {
         let info = UsbPortInfo {
             vid: BLUEIO_VID,
@@ -201,5 +216,15 @@ mod tests {
         assert_eq!(result_type, BleuIOResponseType::AcknowledgementResponse);
         assert_eq!(v["err"], 0);
         assert_eq!(v["errMsg"], "ok");
+    }
+
+    #[test]
+    fn test_get_bleuio_result_scanfinddata() {
+        let json = r#"{"SF":38,"addr":"F5:50:35:CF:B1:ED","type":0,"data":"0201061BFF5B07050422013FBD007D27E000BB00F419000000000000020A02"}"#;
+        let v = parse_bleuio_result(json).unwrap();
+        let result_type = get_bleuio_result_type(&v);
+        assert_eq!(result_type, BleuIOResponseType::ScanFindDataResponse);
+        assert_eq!(v["addr"], "F5:50:35:CF:B1:ED");
+        assert_eq!(v["data"], "0201061BFF5B07050422013FBD007D27E000BB00F419000000000000020A02");
     }
 }
