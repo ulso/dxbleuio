@@ -9,7 +9,7 @@ pub enum VocType {
 }
 
 #[derive(Debug, Clone, PartialEq, Copy)]
-pub enum SensorType {
+pub enum HibouAirType {
     Unknown = 0x00,
     TempHumSensor = 0x02,
     PmSensor = 0x03,
@@ -24,23 +24,23 @@ pub enum SensorType {
     Matrix = 0x14,
 }
 
-impl TryFrom<i64> for SensorType {
+impl TryFrom<i64> for HibouAirType {
     type Error = &'static str;
 
     fn try_from(value: i64) -> std::result::Result<Self, Self::Error> {
         match value {
-            0x00 => Ok(SensorType::Unknown),
-            0x02 => Ok(SensorType::TempHumSensor),
-            0x03 => Ok(SensorType::PmSensor),
-            0x04 => Ok(SensorType::Co2Sensor),
-            0x05 => Ok(SensorType::No2OutdoorWifi),
-            0x06 => Ok(SensorType::Co2Battery),
-            0x07 => Ok(SensorType::No2OutdoorLtemNbiot),
-            0x08 => Ok(SensorType::PirSensor),
-            0x09 => Ok(SensorType::Co2Noise),
-            0x0A => Ok(SensorType::DuoMaster),
-            0x0B => Ok(SensorType::DuoSlave),
-            0x14 => Ok(SensorType::Matrix),
+            0x00 => Ok(HibouAirType::Unknown),
+            0x02 => Ok(HibouAirType::TempHumSensor),
+            0x03 => Ok(HibouAirType::PmSensor),
+            0x04 => Ok(HibouAirType::Co2Sensor),
+            0x05 => Ok(HibouAirType::No2OutdoorWifi),
+            0x06 => Ok(HibouAirType::Co2Battery),
+            0x07 => Ok(HibouAirType::No2OutdoorLtemNbiot),
+            0x08 => Ok(HibouAirType::PirSensor),
+            0x09 => Ok(HibouAirType::Co2Noise),
+            0x0A => Ok(HibouAirType::DuoMaster),
+            0x0B => Ok(HibouAirType::DuoSlave),
+            0x14 => Ok(HibouAirType::Matrix),
             _ => Err("Unkown sensor type"),
         }
     }
@@ -129,24 +129,24 @@ impl HibouAir {
     }
 
     // Return board type as SensorType.
-    pub fn get_board_type(&self) -> SensorType {
-        SensorType::try_from(self.board_type as i64).unwrap_or(SensorType::Unknown) 
+    pub fn get_board_type(&self) -> HibouAirType {
+        HibouAirType::try_from(self.board_type as i64).unwrap_or(HibouAirType::Unknown) 
     }
 
     // Return board type as string.
     pub fn get_board_type_string(&self) -> String {
         match self.get_board_type() {
-            SensorType::PmSensor => "PM".to_string(),
-            SensorType::Co2Sensor => "CO2".to_string(),
-            SensorType::TempHumSensor => "Temp/Hum".to_string(),
-            SensorType::No2OutdoorWifi => "NO2 Outdoor WiFi".to_string(),
-            SensorType::Co2Battery => "CO2 Battery".to_string(),
-            SensorType::No2OutdoorLtemNbiot => "NO2 Outdoor LTEM NBIOT".to_string(),
-            SensorType::PirSensor => "PIR".to_string(),
-            SensorType::Co2Noise => "CO2 Noise".to_string(),
-            SensorType::DuoMaster => "Duo Master".to_string(),
-            SensorType::DuoSlave => "Duo Slave".to_string(),
-            SensorType::Matrix => "Matrix".to_string(),
+            HibouAirType::PmSensor => "PM".to_string(),
+            HibouAirType::Co2Sensor => "CO2".to_string(),
+            HibouAirType::TempHumSensor => "Temp/Hum".to_string(),
+            HibouAirType::No2OutdoorWifi => "NO2 Outdoor WiFi".to_string(),
+            HibouAirType::Co2Battery => "CO2 Battery".to_string(),
+            HibouAirType::No2OutdoorLtemNbiot => "NO2 Outdoor LTEM NBIOT".to_string(),
+            HibouAirType::PirSensor => "PIR".to_string(),
+            HibouAirType::Co2Noise => "CO2 Noise".to_string(),
+            HibouAirType::DuoMaster => "Duo Master".to_string(),
+            HibouAirType::DuoSlave => "Duo Slave".to_string(),
+            HibouAirType::Matrix => "Matrix".to_string(),
             _ => "Unknown".to_string(),
         }
     }
@@ -250,7 +250,7 @@ mod tests {
             Ok(hibouair) => {
                 assert_eq!(hibouair.get_mfid(), 0x075B, "Checking MFID value");
                 assert_eq!(hibouair.get_beacon_nr(), 0x05, "Checking beacon number");
-                assert_eq!(hibouair.get_board_type(), SensorType::Co2Sensor, "Checking board type");
+                assert_eq!(hibouair.get_board_type(), HibouAirType::Co2Sensor, "Checking board type");
                 assert_eq!(hibouair.get_id(), 0x22005A, "Checking board ID value");
                 assert_eq!(hibouair.get_als(), 0x0000, );
                 assert_eq!(hibouair.get_bar(), 1017.0, "Checking pressure value");
