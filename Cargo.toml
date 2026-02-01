@@ -8,6 +8,7 @@ edition = "2021"
 
 [dependencies]
 chrono = "0.4.43"
+confy = "2.0.0"
 dioxus = { version = "0.7.3", features = ["desktop"] }
 futures-channel = "0.3.31"
 futures-util = "0.3.31"
