@@ -122,6 +122,11 @@ pub fn use_bleuio(
                                                 if data.len() > 60 {
                                                     match HibouAir::from_hex(data) {
                                                         Ok(hibou) => {
+                                                            // ✅ Only accept the "full" HibouAir payload (Beacon 0x05)
+                                                            if hibou.get_beacon_nr() != 0x05 {
+                                                                continue;
+                                                            }
+
                                                             add_sensor(hibs, hibou);
                                                             *LAST_TIME.write() = Local::now();
                                                             *LAST_TIME_STR.write() = LAST_TIME.read().format("%Y-%m-%d %H:%M:%S").to_string();
