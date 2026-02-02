@@ -39,8 +39,7 @@ fn main() {
     let mut window = WindowBuilder::new()
         .with_title("Sensor Dashboard")
         .with_inner_size(LogicalSize::new(width, height))
-        .with_min_inner_size(LogicalSize::new(800.0, 500.0))
-        .with_max_inner_size(LogicalSize::new(2000.0, 1500.0));
+        .with_min_inner_size(LogicalSize::new(800.0, 500.0));
     
     // Apply saved position if available
     if let (Some(x), Some(y)) = (config.window.x, config.window.y) {
