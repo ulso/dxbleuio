@@ -119,6 +119,7 @@ pub fn use_bleuio(
                                                 // Scan completed.
                                                 // logga(log_handle, &format!("address: {} data: {}\n", &v["addr"], &v["data"]));
                                                 let data = &v["data"].as_str().unwrap_or("");
+                                                // println!("Raw data: {}", data);
                                                 if data.len() > 60 {
                                                     match HibouAir::from_hex(data) {
                                                         Ok(hibou) => {

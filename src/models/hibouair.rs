@@ -166,6 +166,11 @@ impl HibouAir {
         self.als
     }
 
+    // Return ambient light sensor value.
+    pub fn get_noise(&self) -> u16 {
+        self.als.swap_bytes()
+    }
+
     // Return barometric pressure value.
     pub fn get_bar(&self) -> f64 {
         self.bar as f64 / 10.0
