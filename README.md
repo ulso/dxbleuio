@@ -81,4 +81,4 @@ The application has been tested and verified on:
 - **Raspberry Pi 5** (latest Debian Trixie)
 
 ## License
-[Insert License Here - e.g., MIT or Apache 2.0]
+MIT
