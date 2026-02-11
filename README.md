@@ -1,48 +1,84 @@
 # Example Dioxus/Rust application monitoring sensor devices using the [BleuIO](https://bleuio.com) dongle
 
-This is my first try to develop a desktop application in Rust using the [Dioxus](https://dioxuslabs.com) framework.
+This is a desktop application developed in Rust using the [Dioxus](https://dioxuslabs.com) framework (v0.7). It monitors Bluetooth LE sensor data via a BleuIO USB dongle.
 
-The kinds of sensor that could be monitored by this application are the ones from [Smart Sensor Devices AB](https://smartsensordevices.com), specifically the [HibouAIR](https://smartsensordevices.com/our-products-and-solutions/) sensors.
+The application is specifically designed to monitor sensors from [Smart Sensor Devices AB](https://smartsensordevices.com), primarily the **HibouAIR** series.
+
+## Supported Sensors & Data
+The application parses advertisement data from HibouAIR sensors, supporting various metrics depending on the sensor model:
+- **Environment**: Temperature, Humidity, Barometric Pressure, Ambient Light.
+- **Air Quality**: CO2 (Carbon Dioxide), VOC (Volatile Organic Compounds), PM1.0, PM2.5, PM10.
+- **Other**: PIR (Motion), Noise levels.
 
 ## How it works
-1. The app starts by trying to find a USB device with the Vendor ID and Product ID of the BlueIO dongle.
-2. If valid device found, it tries to open the corresponding USB Serial port.
-3. If open succeeded, turns echo off with the 'ATE0' command.
-4. Enables verbose mode with the 'ATV1' command.
-5. Starts scanning for sensor advertisment with the 'AT+FINDSCANDATA=FF5B07' command.
+1. **Discovery**: The app searches for a USB device matching the BleuIO Vendor ID and Product ID.
+2. **Serial Connection**: It opens the corresponding USB Serial port using `serialport5` and `serial2-tokio`.
+3. **Initialization**: 
+    - Turns echo off (`ATE0`).
+    - Enables verbose mode (`ATV1`).
+4. **Scanning**: Starts scanning for specific sensor advertisement data using the command `AT+FINDSCANDATA=FF5B07` (where `5B07` is the HibouAIR manufacturer ID).
+5. **Persistence**: The application uses `confy` to remember window size and position across restarts.
 
-## Screenshot
-![Screenshot](/img/SCR-20260210-unyj.png)
+## Screenshots
+![Dashboard](/img/SCR-20260210-unyj.png)
+![Sensor Details](/img/SCR-20260120-lqgp.png)
 
-![Screenshot](/img/SCR-20260120-lqgp.png)
+## Installation & Setup
 
-The application has been tested on macos and on my Raspberry Pi 5 with the latest Trixie distro.
+### Prerequisites
+- **Rust**: [Install Rust](https://rustup.rs/)
+- **Dioxus CLI**:
+  ```bash
+  cargo install dioxus-cli
+  ```
+- **System Dependencies (Linux/Raspberry Pi)**:
+  You may need `libudev` development headers:
+  ```bash
+  sudo apt-get install pkg-config libudev-dev
+  ```
+  Ensure your user has permission to access the serial port:
+  ```bash
+  sudo usermod -a -G dialout $USER
+  ```
+  *(Log out and back in for changes to take effect)*
+
+### Running the App
+To run in development mode with hot-reloading:
+```bash
+dx serve
+```
+
+To build for release:
+```bash
+dx build --release --platform desktop
+```
 
 ## Project Structure
-The src/ directory is organized into functional modules:
-
-- src/components/: Contains UI components.
-- dashboard.rs: The main dashboard view (formerly Hero component).
-- sensor_panel.rs: The sensor display component.
-- src/models/: Contains data models and parsing logic.
-- bleuio.rs: BleuIO dongle definitions and response parsing.
-- hibouair.rs: HibouAir sensor data structure and parsing.
-- src/hooks/: Contains custom Dioxus hooks.
-- use_bleuio.rs: Encapsulates the serial port communication logic.
-- src/main.rs: Handles window configuration and mounting the App.
+The project follows a modular Dioxus 0.7 structure:
 
 ```
 src/
-├── components/
-│   ├── dashboard.rs
-│   ├── mod.rs
-│   └── sensor_panel.rs
-├── hooks/
-│   ├── mod.rs
-│   └── use_bleuio.rs
-├── models/
-│   ├── bleuio.rs
-│   ├── hibouair.rs
+├── components/          # UI Components
+│   ├── dashboard.rs     # Main layout and sensor grid
+│   ├── sensor_panel.rs  # Individual sensor display cards
 │   └── mod.rs
-└── main.rs
-````
+├── hooks/               # Custom Reactive Hooks
+│   ├── use_bleuio.rs    # Serial port communication & data stream
+│   ├── use_window_config.rs # Window state persistence
+│   └── mod.rs
+├── models/              # Data Logic & Parsing
+│   ├── bleuio.rs        # Dongle responses and AT commands
+│   ├── hibouair.rs      # HibouAir binary protocol parsing (using zerocopy)
+│   ├── sensor_data.rs   # Unified sensor state models
+│   ├── config.rs        # App configuration (window size, etc.)
+│   └── mod.rs
+└── main.rs              # App entry point and window configuration
+```
+
+## Compatibility
+The application has been tested and verified on:
+- **macOS** (with `macos-app-nap` prevention)
+- **Raspberry Pi 5** (latest Debian Trixie)
+
+## License
+[Insert License Here - e.g., MIT or Apache 2.0]
