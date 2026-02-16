@@ -1,5 +1,5 @@
 use hex;
-use zerocopy::{FromBytes, Unaligned, Immutable, KnownLayout};
+use zerocopy::{FromBytes, Immutable, KnownLayout, Unaligned};
 
 pub enum VocType {
     Old = 0,
@@ -50,28 +50,27 @@ impl TryFrom<i64> for HibouAirType {
 #[repr(C, packed)]
 #[derive(FromBytes, Unaligned, Immutable, KnownLayout, Debug, Clone, Copy, PartialEq)]
 pub struct HibouAir {
-    mfid: u16,          // the manufacturer id of the device
-    beacon_nr: u8,      // type of beacon
-    board_type: u8,     // type of device
-    board_id: [u8;3],   // unique board id
-    als: u16,           // ambient light sensor
-    bar: u16,           // pressure
-    temp: u16,          // temperature
-    hum: u16,           // humidity
-    voc: u16,           // volatile organic compounds
-    pm1_0: u16,         // particle matter PM1.0
-    pm2_5: u16,         // particle matter PM2.5
-    pm10: u16,          // particle matter PM10.0
-    co2: u16,           // carbon dioxide
-    voc_type: u8,       // 0 = old, 1 = resistance, 2 = ppm, 3 = IAQ
+    mfid: u16,         // the manufacturer id of the device
+    beacon_nr: u8,     // type of beacon
+    board_type: u8,    // type of device
+    board_id: [u8; 3], // unique board id
+    als_noise: u16,    // ambient light sensor
+    bar: u16,          // pressure
+    temp: u16,         // temperature
+    hum: u16,          // humidity
+    voc: u16,          // volatile organic compounds
+    pm1_0: u16,        // particle matter PM1.0
+    pm2_5: u16,        // particle matter PM2.5
+    pm10: u16,         // particle matter PM10.0
+    co2: u16,          // carbon dioxide
+    voc_type: u8,      // 0 = old, 1 = resistance, 2 = ppm, 3 = IAQ
 }
 
 impl HibouAir {
     /// Tar en hex-sträng och försöker konvertera den till en HibouAir-struct
     pub fn from_hex(hex_str: &str) -> std::result::Result<Self, String> {
         // 1. Konvertera hex till bytes
-        let bytes = hex::decode(hex_str)
-            .map_err(|e| format!("Ogiltig hex-sträng: {}", e))?;
+        let bytes = hex::decode(hex_str).map_err(|e| format!("Ogiltig hex-sträng: {}", e))?;
 
         // 2. Försök läsa structen från början av byten
         // read_from_prefix returnerar Result<(Self, &[u8]), CastError>
@@ -98,12 +97,12 @@ impl HibouAir {
     // Return a string representation of the HibouAir struct.
     pub fn to_string(&self) -> String {
         format!(
-            "HibouAir(mfid: {}, beacon_nr: {}, board_type: {}, board_id: {:02X?}, als: {}, bar: {}, temp: {}, hum: {}, voc: {}, pm1_0: {}, pm2_5: {}, pm10: {}, co2: {}, voc_type: {})",
+            "HibouAir(mfid: {}, beacon_nr: {}, board_type: {}, board_id: {:02X?}, als_noise: {}, bar: {}, temp: {}, hum: {}, voc: {}, pm1_0: {}, pm2_5: {}, pm10: {}, co2: {}, voc_type: {})",
             {self.mfid},
             self.beacon_nr,
             self.board_type,
             self.board_id,
-            {self.als},
+            {self.als_noise},
             {self.bar},
             {self.temp},
             {self.hum},
@@ -130,7 +129,7 @@ impl HibouAir {
 
     // Return board type as SensorType.
     pub fn get_board_type(&self) -> HibouAirType {
-        HibouAirType::try_from(self.board_type as i64).unwrap_or(HibouAirType::Unknown) 
+        HibouAirType::try_from(self.board_type as i64).unwrap_or(HibouAirType::Unknown)
     }
 
     // Return board type as string.
@@ -153,7 +152,9 @@ impl HibouAir {
 
     // Return board ID as u32.
     pub fn get_id(&self) -> u32 {
-        ((self.board_id[0] as u32) << 16) | ((self.board_id[1] as u32) << 8) | (self.board_id[2] as u32)
+        ((self.board_id[0] as u32) << 16)
+            | ((self.board_id[1] as u32) << 8)
+            | (self.board_id[2] as u32)
     }
 
     // Return board ID as hex string.
@@ -163,12 +164,12 @@ impl HibouAir {
 
     // Return ambient light sensor value.
     pub fn get_als(&self) -> u16 {
-        self.als
+        self.als_noise
     }
 
     // Return ambient light sensor value.
     pub fn get_noise(&self) -> u16 {
-        self.als.swap_bytes()
+        self.als_noise.swap_bytes()
     }
 
     // Return barometric pressure value.
@@ -193,7 +194,7 @@ impl HibouAir {
 
     // Return VOC value.
     pub fn get_voc(&self) -> f64 {
-        let mut v: f64 = self.voc as f64 ;
+        let mut v: f64 = self.voc as f64;
         if self.voc_type == 2 {
             v = v / 100.0;
         }
@@ -222,8 +223,8 @@ impl HibouAir {
         match self.voc_type {
             0 => "".to_string(),
             1 => "".to_string(),
-            2 => format!("{:.1} {}",self.get_voc(), self.get_voc_unit()),
-            3 => format!("{:.1} {}",self.get_voc(), self.get_voc_unit()),
+            2 => format!("{:.1} {}", self.get_voc(), self.get_voc_unit()),
+            3 => format!("{:.1} {}", self.get_voc(), self.get_voc_unit()),
             _ => "".to_string(),
         }
     }
@@ -255,9 +256,13 @@ mod tests {
             Ok(hibouair) => {
                 assert_eq!(hibouair.get_mfid(), 0x075B, "Checking MFID value");
                 assert_eq!(hibouair.get_beacon_nr(), 0x05, "Checking beacon number");
-                assert_eq!(hibouair.get_board_type(), HibouAirType::Co2Sensor, "Checking board type");
+                assert_eq!(
+                    hibouair.get_board_type(),
+                    HibouAirType::Co2Sensor,
+                    "Checking board type"
+                );
                 assert_eq!(hibouair.get_id(), 0x22005A, "Checking board ID value");
-                assert_eq!(hibouair.get_als(), 0x0000, );
+                assert_eq!(hibouair.get_als(), 0x0000,);
                 assert_eq!(hibouair.get_bar(), 1017.0, "Checking pressure value");
                 assert_eq!(hibouair.get_temp(), 19.8, "Checking temperature value");
                 assert_eq!(hibouair.get_hum(), 27.9, "Checking humidity value");
@@ -267,7 +272,7 @@ mod tests {
                 assert_eq!(hibouair.get_pm10(), 0.0, "Checking PM10 value");
                 assert_eq!(hibouair.get_co2(), 448, "Checking CO2 value");
                 assert_eq!(hibouair.get_voc_type(), 2, "Checking VOC type");
-            },
+            }
             Err(_) => panic!("Unexpected error parsing HibouAir from hex"),
         }
     }
