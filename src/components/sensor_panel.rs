@@ -5,6 +5,7 @@ use crate::hooks::use_bleuio::LAST_TIME_STR;
 
 fn header_title(sensor: &HibouAir) -> String {
     match sensor.get_board_type() {
+        HibouAirType::TempHumSensor => "Temp/Humidity Sensor".to_string(),
         HibouAirType::Co2Sensor => "CO2 Sensor".to_string(),
         HibouAirType::Co2Noise => "CO2 Noise Sensor".to_string(),
         HibouAirType::PmSensor => "PM Sensor".to_string(),
@@ -37,6 +38,41 @@ fn SensorCard(header: String, id: String, children: Element) -> Element {
 
             // White body
             div { class: "bg-white px-6 py-5", {children} }
+        }
+    }
+}
+
+#[component]
+fn SensorPanelTempHum(sensor: HibouAir) -> Element {
+    rsx! {
+        SensorCard { header: header_title(&sensor), id: sensor.get_board_id_string(),
+
+            div {
+                class: "grid gap-8",
+                style: "grid-template-columns: repeat(6, minmax(0, 1fr));",
+
+                // Metric {
+                //     label: "CO2".to_string(),
+                //     value: format!("{} ppm", sensor.get_co2()),
+                // }
+                //Metric { label: "VOC".to_string(),      value: if sensor.get_voc_view().is_empty() { "-".to_string() } else { sensor.get_voc_view() } }
+                Metric {
+                    label: "Humidity".to_string(),
+                    value: format!("{:.0} %rh", sensor.get_hum()),
+                }
+                Metric {
+                    label: "Temp".to_string(),
+                    value: format!("{:.1} °C", sensor.get_temp()),
+                }
+                Metric {
+                    label: "Pressure".to_string(),
+                    value: format!("{:.0} hPA", sensor.get_bar()),
+                }
+                Metric {
+                    label: "Light".to_string(),
+                    value: format!("{} Lux", sensor.get_als()),
+                }
+            }
         }
     }
 }
@@ -187,6 +223,9 @@ pub fn SensorPanel(sensor: HibouAir) -> Element {
         },
         HibouAirType::Co2Noise  => rsx! {
             SensorPanelCO2Noise { sensor: sensor.clone() }
+        },
+        HibouAirType::TempHumSensor => rsx! {
+            SensorPanelTempHum { sensor: sensor.clone() }
         },
         _ => rsx! {
             SensorPanelUnknown { sensor: sensor.clone() }
